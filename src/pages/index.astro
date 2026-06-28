@@ -1,11 +1,9 @@
----
 // src/pages/index.astro
 export const prerender = false;
 
 const name = "Can Berk";
 const LASTFM_API_KEY = "fa70536a9be667662278e223ac3b3d29";
 const LASTFM_USERNAME = "serooooooooooo";
-
 // API Bilgileri artık environment variable'dan geliyor
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
@@ -26,16 +24,15 @@ if (searchQ) {
       },
       body: 'grant_type=client_credentials'
     });
-    
     const tokenData = await tokenRes.json();
     const accessToken = tokenData.access_token;
 
     // Spotify Arama
-    let spotifyQuery = searchArtist ? `${searchQ} artist:${searchArtist}` : searchQ;
+    let spotifyQuery = searchArtist ?
+      `${searchQ} artist:${searchArtist}` : searchQ;
     const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(spotifyQuery)}&type=${searchType}&limit=1`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
-    
     const searchData = await searchRes.json();
     let imageUrl = null;
 
@@ -88,7 +85,7 @@ if (searchQ) {
                     <h2 class="section-title">Hakkımda</h2>
                     <div class="about-content">
                         <p>
-                            Tasarım ve kodun kesiştiği noktada, insanı yormayan temiz arayüzler üretmeye odaklanıyorum. 
+                            Tasarım ve kodun kesiştiği noktada, insanı yormayan temiz arayüzler üretmeye odaklanıyorum.
                             Gereksiz tüm süslemelerden arındırılmış, işlevsel ve performanslı web deneyimleri geliştirmek en büyük motivasyonum.
                         </p>
                     </div>
@@ -149,6 +146,19 @@ if (searchQ) {
 
                 </section>
 
+                <footer class="site-footer word delay-7">
+                    <hr class="footer-divider" />
+                    <div class="footer-content">
+                        <p class="copyright">© {new Date().getFullYear()} {name}</p>
+                        <div class="social-links">
+                            <a href="https://github.com/kullaniciadi" target="_blank" rel="noopener noreferrer">GitHub</a>
+                            <a href="https://linkedin.com/in/kullaniciadi" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+                            <a href="https://twitter.com/kullaniciadi" target="_blank" rel="noopener noreferrer">Twitter</a>
+                            <a href="https://instagram.com/kullaniciadi" target="_blank" rel="noopener noreferrer">Instagram</a>
+                        </div>
+                    </div>
+                </footer>
+
             </main>
         </div>
 
@@ -158,7 +168,6 @@ if (searchQ) {
 
             function initLazyLoading() {
                 if (imageObserver) imageObserver.disconnect();
-
                 imageObserver = new IntersectionObserver((entries, observer) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -196,9 +205,7 @@ if (searchQ) {
             }
 
             function updateAmbientGlow(url) {
-                // Mobilde performansı korumak için arka plan aurasını çalıştırmıyoruz
                 if (window.innerWidth <= 768) return;
-                
                 const glow = document.getElementById('ambient-glow');
                 if (glow) {
                     glow.style.backgroundImage = `url('${url}')`;
@@ -228,7 +235,7 @@ if (searchQ) {
             }
 
             function initLiquidGlassTracking() {
-                if (window.innerWidth <= 768) return; // Mobilde mouse takip efektini kapatarak işlemciyi yormuyoruz
+                if (window.innerWidth <= 768) return;
                 
                 const cards = document.querySelectorAll('.liquid-glass-effect, .bento-node');
                 cards.forEach(card => {
@@ -284,7 +291,7 @@ if (searchQ) {
                     const defaultTrackImg = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=60";
                     const defaultArtistImg = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&auto=format&fit=crop&q=60";
 
-                    // 1. ŞARKILAR
+                    // 1. ŞARKILAR (Değişiklik: Dakika yerine ham dinleme/tekrar sayısı)
                     const topTracksRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
                     const grid = document.getElementById('top-tracks-grid');
                     if (topTracksRes.ok && grid) {
@@ -295,7 +302,7 @@ if (searchQ) {
                         topTracks.forEach((item, index) => {
                             const artistName = item.artist?.name || '';
                             const trackName = item.name || '';
-                            const minutes = calculateMinutes(item.playcount);
+                            const playCount = item.playcount || 0; // Ham playcount değerini alıyoruz
                             const imgId = `track-img-${index}`;
                             
                             htmlContent += `
@@ -306,7 +313,7 @@ if (searchQ) {
                                         <div class="bento-meta">
                                             <span class="bento-title">${trackName}</span>
                                             <span class="bento-artist">${artistName}</span>
-                                            <span class="bento-sub">${minutes} dk dinleme</span>
+                                            <span class="bento-sub">${playCount} dinleme</span>
                                         </div>
                                     </div>
                                 </a>
@@ -385,7 +392,6 @@ if (searchQ) {
                     }
 
                     initLiquidGlassTracking();
-
                 } catch (error) { console.error("İstatistik hatası:", error); }
             }
 
@@ -418,7 +424,7 @@ if (searchQ) {
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         background-color: #030303; 
-        color: #f5f5f7; 
+        color: #f5f5f7;
         font-family: 'Inter', -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
         height: 100%;
@@ -484,7 +490,7 @@ if (searchQ) {
 
     .welcome-text { 
         font-family: 'Inter', sans-serif;
-        font-weight: 700; 
+        font-weight: 700;
         font-size: clamp(2rem, 5.5vw, 3.4rem); 
         letter-spacing: -0.04em; 
         line-height: 1.15; 
@@ -493,12 +499,12 @@ if (searchQ) {
     .muted-text { color: #1a1a1c; } 
     
     .section-title { 
-        font-family: 'JetBrains Mono', monospace; 
+        font-family: 'JetBrains Mono', monospace;
         font-size: 0.68rem; 
         text-transform: uppercase; 
         letter-spacing: 0.2em; 
         font-weight: 700; 
-        color: #444446; 
+        color: #444446;
     }
     
     .subsection-title { 
@@ -534,7 +540,7 @@ if (searchQ) {
     .liquid-glass-effect {
         position: relative;
         background: rgba(255, 255, 255, 0.01); 
-        border: 1px solid rgba(255, 255, 255, 0.03); 
+        border: 1px solid rgba(255, 255, 255, 0.03);
         box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
@@ -543,7 +549,7 @@ if (searchQ) {
     }
 
     .current-track-card-link:hover .liquid-glass-effect {
-        border-color: rgba(255, 255, 255, 0.08); 
+        border-color: rgba(255, 255, 255, 0.08);
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
     }
 
@@ -632,7 +638,8 @@ if (searchQ) {
 
     .bento-overlay {
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         background: linear-gradient(to top, rgba(3, 3, 4, 0.95) 0%, rgba(3, 3, 4, 0.3) 70%, rgba(3, 3, 4, 0) 100%);
         display: flex;
         align-items: flex-end;
@@ -703,6 +710,52 @@ if (searchQ) {
     }
 
     /* ==========================================================================
+       FOOTER STYLES (Yeni eklenen minimalist footer stili)
+       ========================================================================== */
+    .site-footer {
+        margin-top: 2rem;
+        width: 100%;
+    }
+
+    .footer-divider {
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        margin-bottom: 2rem;
+    }
+
+    .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .copyright {
+        font-size: 0.85rem;
+        color: #444446;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .social-links {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .social-links a {
+        font-size: 0.85rem;
+        color: #86868b;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .social-links a:hover {
+        color: #f5f5f7;
+    }
+
+    /* ==========================================================================
        RESPONSIVE BREAKPOINTS (Tablet & Mobil Uyumluluk Katmanı)
        ========================================================================== */
 
@@ -715,7 +768,6 @@ if (searchQ) {
 
     /* Mobil Cihazlar (Telefonlar) */
     @media (max-width: 600px) {
-        /* Sayfa Başlığı ve Butonların Alt Alta Düzenli Durması İçin */
         .music-header-block .title-area {
             flex-direction: column;
             align-items: flex-start;
@@ -734,19 +786,16 @@ if (searchQ) {
             font-size: 0.68rem;
         }
 
-        /* 2 Sütunlu Dengeli Mobil Bento Izgarası */
         .bento-seamless-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 0.5rem;
         }
 
-        /* Mobilde Kutuların Aşırı Küçülmesini Önlemek İçin Kare Oranını Serbest Bırakıyoruz */
         .bento-node {
             aspect-ratio: auto;
             height: 155px;
         }
 
-        /* Büyük (#1) Hücre Mobilde de Şık ve Okunabilir Kalsın */
         .bento-big {
             grid-column: span 2;
             grid-row: span 1;
@@ -757,7 +806,6 @@ if (searchQ) {
             font-size: 1rem;
         }
 
-        /* Canlı Çalan Şarkı Kartı Mobilde Daha Kompakt */
         .current-track-card {
             padding: 0.85rem;
             gap: 1rem;
@@ -770,6 +818,23 @@ if (searchQ) {
 
         .track-title, .track-artist {
             font-size: 0.9rem;
+        }
+
+        /* Footer Mobil Düzenlemeleri */
+        .footer-content {
+            flex-direction: column-reverse;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .social-links {
+            width: 100%;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .social-links a {
+            font-size: 0.8rem;
         }
 
         /* Masaüstü Efektlerini Kapat */
