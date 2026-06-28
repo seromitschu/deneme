@@ -1,9 +1,7 @@
 import { defineConfig } from 'astro/config';
-import vercel from '@astrojs/vercel/serverless';
+import vercel from '@astrojs/vercel'; // Bu satır eklenmeli
 
 export default defineConfig({
-  output: 'server',
-  adapter: vercel({
-    webAnalytics: { enabled: true },
-  }),
+  output: 'server', // Vercel'de SSR (dinamik) çalışması için bu şart
+  adapter: vercel(), // Vercel adaptörü
 });
