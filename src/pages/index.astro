@@ -3,12 +3,12 @@
 export const prerender = false;
 
 const name = "Can Berk";
-
 const LASTFM_API_KEY = "fa70536a9be667662278e223ac3b3d29";
 const LASTFM_USERNAME = "serooooooooooo";
 
-const SPOTIFY_CLIENT_ID = "339d690a0df546cbac4353675d4193e9";
-const SPOTIFY_CLIENT_SECRET = "af3e7815d00242ecb4600636a6f6e52c";
+// API Bilgileri artık environment variable'dan geliyor
+const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
 const urlObj = new URL(Astro.request.url);
 const searchQ = urlObj.searchParams.get('q');
@@ -17,31 +17,25 @@ const searchType = urlObj.searchParams.get('type') || 'track';
 
 if (searchQ) {
   try {
+    // Spotify Token Alma
     const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET)
+        'Authorization': 'Basic ' + Buffer.from(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET).toString('base64')
       },
       body: 'grant_type=client_credentials'
     });
-
+    
     const tokenData = await tokenRes.json();
     const accessToken = tokenData.access_token;
 
-    let spotifyQuery = '';
-    if (searchType === 'track' && searchArtist) {
-      spotifyQuery = `track:${searchQ} artist:${searchArtist}`;
-    } else if (searchType === 'album' && searchArtist) {
-      spotifyQuery = `album:${searchQ} artist:${searchArtist}`;
-    } else {
-      spotifyQuery = `artist:${searchQ}`;
-    }
-
-    const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(spotifyQuery)}&type=${searchType === 'album' ? 'album' : searchType}&limit=1`, {
+    // Spotify Arama
+    let spotifyQuery = searchArtist ? `${searchQ} artist:${searchArtist}` : searchQ;
+    const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(spotifyQuery)}&type=${searchType}&limit=1`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
-
+    
     const searchData = await searchRes.json();
     let imageUrl = null;
 
