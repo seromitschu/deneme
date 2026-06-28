@@ -4,7 +4,6 @@ export const prerender = false;
 const name = "Can Berk";
 const LASTFM_API_KEY = "fa70536a9be667662278e223ac3b3d29";
 const LASTFM_USERNAME = "serooooooooooo";
-// API Bilgileri artık environment variable'dan geliyor
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
@@ -15,7 +14,6 @@ const searchType = urlObj.searchParams.get('type') || 'track';
 
 if (searchQ) {
   try {
-    // Spotify Token Alma
     const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -27,10 +25,8 @@ if (searchQ) {
     const tokenData = await tokenRes.json();
     const accessToken = tokenData.access_token;
 
-    // Spotify Arama
-    let spotifyQuery = searchArtist ?
-      `${searchQ} artist:${searchArtist}` : searchQ;
-    const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(spotifyQuery)}&type=${searchType}&limit=1`, {
+    let spotifyQuery = searchArtist ? `${searchQ} artist:${searchArtist}` : searchQ;
+    const searchRes = await fetch(`https://api.spotify.com/v1/search?q=$?q=${encodeURIComponent(spotifyQuery)}&type=${searchType}&limit=1`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
     const searchData = await searchRes.json();
@@ -291,7 +287,7 @@ if (searchQ) {
                     const defaultTrackImg = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=60";
                     const defaultArtistImg = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&auto=format&fit=crop&q=60";
 
-                    // 1. ŞARKILAR (Değişiklik: Dakika yerine ham dinleme/tekrar sayısı)
+                    // 1. ŞARKILAR (Değişiklik: "dk dinleme" kaldırıldı, saf tekrar sayısı eklendi)
                     const topTracksRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
                     const grid = document.getElementById('top-tracks-grid');
                     if (topTracksRes.ok && grid) {
@@ -302,7 +298,7 @@ if (searchQ) {
                         topTracks.forEach((item, index) => {
                             const artistName = item.artist?.name || '';
                             const trackName = item.name || '';
-                            const playCount = item.playcount || 0; // Ham playcount değerini alıyoruz
+                            const playCount = item.playcount || 0;
                             const imgId = `track-img-${index}`;
                             
                             htmlContent += `
@@ -313,7 +309,7 @@ if (searchQ) {
                                         <div class="bento-meta">
                                             <span class="bento-title">${trackName}</span>
                                             <span class="bento-artist">${artistName}</span>
-                                            <span class="bento-sub">${playCount} dinleme</span>
+                                            <span class="bento-sub">${playCount} tekrar</span>
                                         </div>
                                     </div>
                                 </a>
@@ -710,7 +706,7 @@ if (searchQ) {
     }
 
     /* ==========================================================================
-       FOOTER STYLES (Yeni eklenen minimalist footer stili)
+       FOOTER STYLES
        ========================================================================== */
     .site-footer {
         margin-top: 2rem;
@@ -756,17 +752,14 @@ if (searchQ) {
     }
 
     /* ==========================================================================
-       RESPONSIVE BREAKPOINTS (Tablet & Mobil Uyumluluk Katmanı)
+       RESPONSIVE BREAKPOINTS (Mobil Uyumluluk)
        ========================================================================== */
-
-    /* Tablet & Küçük Ekranlar */
     @media (max-width: 900px) {
         .bento-seamless-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
 
-    /* Mobil Cihazlar (Telefonlar) */
     @media (max-width: 600px) {
         .music-header-block .title-area {
             flex-direction: column;
@@ -820,7 +813,6 @@ if (searchQ) {
             font-size: 0.9rem;
         }
 
-        /* Footer Mobil Düzenlemeleri */
         .footer-content {
             flex-direction: column-reverse;
             align-items: flex-start;
@@ -837,7 +829,6 @@ if (searchQ) {
             font-size: 0.8rem;
         }
 
-        /* Masaüstü Efektlerini Kapat */
         .ambient-glow { display: none !important; }
         .bento-node:hover { transform: none !important; }
         .bento-node:hover .bento-img { transform: none !important; }
