@@ -59,12 +59,12 @@ if (searchQ) {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
-  } catch (e: any) {
-    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+  } catch (e) {
+    const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+    return new Response(JSON.stringify({ error: errorMsg }), { status: 500 });
   }
 }
 ---
-
 <!doctype html>
 <html lang="tr">
     <head>
@@ -96,8 +96,7 @@ if (searchQ) {
                     <h2 class="section-title">Hakkımda</h2>
                     <div class="about-content">
                         <p>
-                            Tasarım ve kodun kesiştiği noktada, insanı yormayan temiz arayüzler üretmeye odaklanıyorum.
-                            Gereksiz tüm süslemelerden arındırılmış, işlevsel ve performanslı web deneyimleri geliştirmek en büyük motivasyonum.
+                            Tasarım ve kodun kesiştiği noktada, insanı yormayan temiz arayüzler üretmeye odaklanıyorum. Gereksiz tüm süslemelerden arındırılmış, işlevsel ve performanslı web deneyimleri geliştirmek en büyük motivasyonum.
                         </p>
                     </div>
                 </section>
@@ -109,14 +108,20 @@ if (searchQ) {
                             <h3 class="exp-card-title">Deneyim</h3>
                             <div class="exp-timeline">
                                 <div class="timeline-item">
-                                    <span class="timeline-date">2025 — Günümüz</span>
-                                    <span class="timeline-role">Founder</span>
-                                    <span class="timeline-company">Ai-Toyon Game Studio</span>
+
+                                    <div class="timeline-info">
+                                        <span class="timeline-date">2025 — Günümüz</span>
+                                        <span class="timeline-role">Founder</span>
+                                        <span class="timeline-company">Ai-Toyon Game Studio</span>
+                                    </div>
                                 </div>
                                 <div class="timeline-item">
-                                    <span class="timeline-date">2023 — Günümüz</span>
-                                    <span class="timeline-role">Full Stack Developer</span>
-                                    <span class="timeline-company">mitschu.co</span>
+
+                                    <div class="timeline-info">
+                                        <span class="timeline-date">2023 — Günümüz</span>
+                                        <span class="timeline-role">Full Stack Developer</span>
+                                        <span class="timeline-company">mitschu.co</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -125,9 +130,14 @@ if (searchQ) {
                             <h3 class="exp-card-title">Eğitim</h3>
                             <div class="exp-timeline">
                                 <div class="timeline-item">
-                                    <span class="timeline-date">2020 — 2025</span>
-                                    <span class="timeline-role">Samsun İbrahim Tanrıverdi Sosyal Bilimler Lisesi</span>
-                                    <span class="timeline-company">Mezuniyet</span>
+                                    <div class="timeline-logo">
+                                        <img src="/logos/ssbl.jpg" alt="Samsun SBL Logo" onerror="this.style.display='none'" />
+                                    </div>
+                                    <div class="timeline-info">
+                                        <span class="timeline-date">2020 — 2025</span>
+                                        <span class="timeline-role">İbrahim Tanrıverdi Sosyal Bilimler Lisesi</span>
+                                        <span class="timeline-company">Mezuniyet</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -250,7 +260,6 @@ if (searchQ) {
                 } catch (e) { console.error("Görsel hatası:", e); }
             }
 
-            // Arka Plan Canlı Parlama Kontrolü
             function updateAmbientGlow(url) {
                 if (window.innerWidth <= 768) return;
                 const glow = document.getElementById('ambient-glow');
@@ -386,7 +395,7 @@ if (searchQ) {
                         let htmlContent = '';
                         topArtists.forEach((artist, index) => {
                             const artistName = artist.name || '';
-                            const minutes = calculateMinutes(artist.playcount);
+                            const playcountText = formatPlaycount(artist.playcount);
                             const imgId = `artist-img-${index}`;
 
                             htmlContent += `
@@ -396,7 +405,7 @@ if (searchQ) {
                                     <div class="bento-overlay">
                                         <div class="bento-meta">
                                             <span class="bento-title">${artistName}</span>
-                                            <span class="bento-sub">${minutes} dk dinleme</span>
+                                            <span class="bento-sub">${playcountText} dinlendi</span>
                                         </div>
                                     </div>
                                 </a>
@@ -419,7 +428,7 @@ if (searchQ) {
                         topAlbums.forEach((album, index) => {
                             const artistName = album.artist?.name || '';
                             const albumName = album.name || '';
-                            const minutes = calculateMinutes(album.playcount);
+                            const playcountText = formatPlaycount(album.playcount);
                             const imgId = `album-img-${index}`;
 
                             htmlContent += `
@@ -430,7 +439,7 @@ if (searchQ) {
                                         <div class="bento-meta">
                                             <span class="bento-title">${albumName}</span>
                                             <span class="bento-artist">${artistName}</span>
-                                            <span class="bento-sub">${minutes} dk dinleme</span>
+                                            <span class="bento-sub">${playcountText} dinlendi</span>
                                         </div>
                                     </div>
                                 </a>
@@ -472,10 +481,9 @@ if (searchQ) {
 </html>
 
 <style is:global>
-    /* Orijinal CSS mimarisi korunmuş, yeni grid alanları eklenmiştir */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
-        background-color: #030303; 
+        background-color: #030303;
         color: #f5f5f7;
         font-family: 'Inter', -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
@@ -518,7 +526,7 @@ if (searchQ) {
     .delay-5 { transition-delay: 0.28s; }
     .delay-6 { transition-delay: 0.38s; }
     .delay-7 { transition-delay: 0.48s; }
-    .delay-8 { transition-delay: 0.58s; } /* Müzik Odası ve Footer geçiş animasyonu için optimize edildi */
+    .delay-8 { transition-delay: 0.58s; }
 
     .wave-emoji {
         display: inline-block;
@@ -599,12 +607,37 @@ if (searchQ) {
     .exp-timeline {
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: 1.5rem;
     }
     .timeline-item {
         display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+    }
+    .timeline-logo {
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .timeline-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .timeline-info {
+        display: flex;
         flex-direction: column;
         gap: 0.15rem;
+        min-width: 0;
     }
     .timeline-date {
         font-family: 'JetBrains Mono', monospace;
@@ -642,7 +675,7 @@ if (searchQ) {
 
     .liquid-glass-effect {
         position: relative;
-        background: rgba(255, 255, 255, 0.01); 
+        background: rgba(255, 255, 255, 0.01);
         border: 1px solid rgba(255, 255, 255, 0.03);
         box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(20px);
@@ -717,7 +750,6 @@ if (searchQ) {
     }
 
     @media (max-width: 600px) {
-        /* Mobilde Yeni Bölümün Dikey Akışı (Telefon Uyumluluğu Güvencesi) */
         .experience-grid {
             grid-template-columns: 1fr;
             gap: 0.75rem;
