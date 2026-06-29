@@ -212,6 +212,9 @@ if (searchQ) {
                             <a href={`${LINK_GITHUB}`} target="_blank" class="footer-link-item">GitHub</a>
                             <a href={`${LINK_LINKEDIN}`} target="_blank" class="footer-link-item">LinkedIn</a>
                         </div>
+                        <div class="footer-stats">
+    <span>Site Trafiği: <span id="visitor-count">...</span></span>
+</div>
                     </div>
                 </footer>
 
@@ -477,29 +480,20 @@ if (searchQ) {
                 setInterval(fetchLiveTrack, 15000);
             });
 
-// Pop-up'ı sayfa yüklendikten sonra sadece görünür yapıyoruz
-    window.addEventListener('load', () => {
-        const popup = document.getElementById('visitor-popup');
-        if (popup) {
-            setTimeout(() => {
-                popup.classList.add('visible');
-            }, 800);
+
+async function getStats() {
+        try {
+            // Buradaki ID'yi sadece sana özel, benzersiz yap (örn: 'portfolio-adiniz-2026')
+            const response = await fetch('https://api.countapi.xyz/hit/seromitschuxyz2026qwewr/visits');
+            const data = await response.json();
+            document.getElementById('visitor-count').textContent = data.value.toLocaleString();
+        } catch (err) {
+            // Servis hata verirse sayfayı bozma, sadece 1 yaz geç
+            document.getElementById('visitor-count').textContent = "1";
         }
-    });
+    }
+    getStats();
         </script>
-<div id="visitor-popup" class="visitor-popup">
-    <div class="visitor-content">
-        <span class="visitor-label">Ziyaretçi</span>
-        <img 
-            src="https://api.visitorbadge.io/api/combined?path=seromitschuxyz" 
-            alt="Ziyaretçi Sayacı"
-            class="visitor-value-img"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-        />
-        <span class="visitor-fallback" style="display: none; font-family: monospace; font-size: 0.9rem;">--</span>
-    </div>
-</div>
-    
     </body>
 </html>
 
@@ -807,93 +801,18 @@ if (searchQ) {
         .bento-node:hover .bento-img { transform: none !important; }
     }
 
-.visitor-popup {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    padding: 1rem 1.4rem;
-    border-radius: 24px; /* Daha modern bir yuvarlatma */
-    z-index: 99999;
-    
-    /* Görünüm */
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Derinlik hissi */
-    
-    /* Animasyon */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(20px) scale(0.95);
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.visitor-popup.visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-}
-
-.visitor-content {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.visitor-label {
+.footer-stats {
+    text-align: center;
+    padding: 2rem 0;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #8e8e93;
+    color: #444446;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 2rem;
 }
 
-.visitor-popup {
-    /* ... diğer stilleriniz aynı kalsın ... */
-    min-height: 50px; 
-    display: flex;
-    align-items: center;
-}
-
-.visitor-value-img {
-    height: 22px; /* Sayacın yüksekliğini sabitledik */
-    display: block;
-    margin-top: 4px;
-}
-
-.visitor-value::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    background: #30d158;
-    border-radius: 50%;
-    box-shadow: 0 0 8px #30d158;
-}
-
-/* Mobil için Pop-up Optimizasyonu */
-@media (max-width: 600px) {
-    .visitor-popup {
-        bottom: 10px; /* Mobilde biraz daha aşağıda */
-        right: 10px;  /* Kenarlara çok yapışmasın */
-        padding: 0.8rem 1.2rem;
-        border-radius: 18px; /* Köşeleri biraz daha yuvarlatıyoruz */
-        width: calc(100% - 20px); /* Ekran genişliğine göre esnek */
-        box-sizing: border-box;
-    }
-
-    .visitor-content {
-        flex-direction: row; /* Mobilde yan yana daha iyi durur */
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .visitor-label {
-        font-size: 0.6rem;
-    }
-
-    .visitor-value-img {
-        height: 20px; /* Mobilde biraz küçülterek ferahlattık */
-    }
+#visitor-count {
+    color: #86868b;
+    font-weight: 600;
 }
 </style>
