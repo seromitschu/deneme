@@ -212,9 +212,6 @@ if (searchQ) {
                             <a href={`${LINK_GITHUB}`} target="_blank" class="footer-link-item">GitHub</a>
                             <a href={`${LINK_LINKEDIN}`} target="_blank" class="footer-link-item">LinkedIn</a>
                         </div>
-                        <div class="footer-stats">
-    <span>Site Trafiği: <span id="visitor-count">...</span></span>
-</div>
                     </div>
                 </footer>
 
@@ -480,20 +477,38 @@ if (searchQ) {
                 setInterval(fetchLiveTrack, 15000);
             });
 
-
-async function getStats() {
-        try {
-            // Buradaki ID'yi sadece sana özel, benzersiz yap (örn: 'portfolio-adiniz-2026')
-            const response = await fetch('https://api.countapi.xyz/hit/seromitschuxyz2026qwewr/visits');
-            const data = await response.json();
-            document.getElementById('visitor-count').textContent = data.value.toLocaleString();
-        } catch (err) {
-            // Servis hata verirse sayfayı bozma, sadece 1 yaz geç
-            document.getElementById('visitor-count').textContent = "1";
+document.addEventListener("DOMContentLoaded", () => {
+        const popup = document.getElementById('visitor-popup');
+        const countEl = document.getElementById('visitor-count');
+        const closeBtn = document.getElementById('close-popup');
+        
+        // 1. Sayaç mantığı (Her sayfayı yenilediğinde artar)
+        let visits = parseInt(localStorage.getItem('site_visits') || 1242);
+        visits += 1;
+        localStorage.setItem('site_visits', visits);
+        countEl.textContent = visits.toLocaleString();
+        
+        // 2. Kapatma mantığı (sessionStorage = sadece bu sekme açıkken kapalı kalsın)
+        if (sessionStorage.getItem('popup_closed') !== 'true') {
+            setTimeout(() => {
+                popup.classList.add('visible');
+            }, 1000);
         }
-    }
-    getStats();
+
+        closeBtn.addEventListener('click', () => {
+            popup.classList.remove('visible');
+            sessionStorage.setItem('popup_closed', 'true');
+        });
+    });
         </script>
+
+<div id="visitor-popup" class="visitor-popup">
+    <div class="popup-content">
+        <span class="popup-label">Ziyaretçi Sayısı</span>
+        <span id="visitor-count" class="popup-value">0</span>
+    </div>
+    <button id="close-popup" class="close-btn" aria-label="Kapat">×</button>
+</div>
     </body>
 </html>
 
@@ -801,18 +816,84 @@ async function getStats() {
         .bento-node:hover .bento-img { transform: none !important; }
     }
 
-.footer-stats {
-    text-align: center;
-    padding: 2rem 0;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    color: #444446;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    margin-top: 2rem;
+
+.visitor-popup {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    display: grid; /* Grid kullanarak daha keskin hizalama */
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 24px;
+    background: rgba(0, 0, 0, 0.4); /* Apple'ın koyu modu gibi */
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-#visitor-count {
-    color: #86868b;
+.visitor-popup.visible { opacity: 1; transform: translateY(0); }
+
+/* Metinleri dikey hizalayalım */
+.popup-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.popup-label {
+    font-size: 12px; /* Çok daha küçük ve zarif */
     font-weight: 600;
+    color: #98989d; /* Apple'ın 'tertiary label' rengi */
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.popup-value {
+    padding-left: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    font-family: -apple-system, sans-serif;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: none;
+    color: #98989d;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* MOBİL ADAPTASYON */
+@media (max-width: 480px) {
+    .visitor-popup {
+        bottom: 16px; /* Ekranın daha aşağısına çekildi */
+        right: 16px;  /* Kenarlardan biraz daha açıldı */
+        left: 16px;   /* Mobilde genişlemesi için left eklendi */
+        padding: 10px 16px;
+        border-radius: 18px; /* Köşe yumuşaklığı biraz daha hafifledi */
+        gap: 8px;
+    }
+
+    .popup-label { font-size: 8px; } /* Mobilde etiket daha küçük */
+    .popup-value { font-size: 14px; } /* Mobilde değer daha kompakt */
+    
+    .close-btn {
+        width: 24px; 
+        height: 24px;
+        font-size: 14px;
+    }
 }
 </style>
