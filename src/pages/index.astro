@@ -59,12 +59,12 @@ if (searchQ) {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
-  } catch (e) {
-    const errorMsg = e instanceof Error ? e.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: errorMsg }), { status: 500 });
+  } catch (e: any) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
 ---
+
 <!doctype html>
 <html lang="tr">
     <head>
@@ -84,8 +84,8 @@ if (searchQ) {
                 
                 <section class="intro-section">
                     <h1 class="welcome-text">
-                        <span class="word delay-1">Merhaba<span class="wave-emoji">👋</span></span> <br />
-                        <span class="word delay-2">Ben <span class="word delay-2 name">{name}</span>.</span> <br />
+                        <span class="word delay-1">Merhaba<span class="wave-emoji">👋</span>.</span> <br />
+                        <span class="word delay-2">Ben {name}.</span> <br />
                         <span class="word delay-3 muted-text">Dijital deneyimler</span> <br />
                         <span class="word delay-4 muted-text">tasarlayan ve geliştiren</span> <br />
                         <span class="word delay-5 muted-text">bir arayüz geliştirici.</span>
@@ -96,7 +96,8 @@ if (searchQ) {
                     <h2 class="section-title">Hakkımda</h2>
                     <div class="about-content">
                         <p>
-                            Tasarım ve kodun kesiştiği noktada, insanı yormayan temiz arayüzler üretmeye odaklanıyorum. Gereksiz tüm süslemelerden arındırılmış, işlevsel ve performanslı web deneyimleri geliştirmek en büyük motivasyonum.
+                            Tasarım ve kodun kesiştiği noktada, insanı yormayan temiz arayüzler üretmeye odaklanıyorum.
+                            Gereksiz tüm süslemelerden arındırılmış, işlevsel ve performanslı web deneyimleri geliştirmek en büyük motivasyonum.
                         </p>
                     </div>
                 </section>
@@ -108,20 +109,14 @@ if (searchQ) {
                             <h3 class="exp-card-title">Deneyim</h3>
                             <div class="exp-timeline">
                                 <div class="timeline-item">
-
-                                    <div class="timeline-info">
-                                        <span class="timeline-date">2025 — Günümüz</span>
-                                        <span class="timeline-role">Founder</span>
-                                        <span class="timeline-company">Ai-Toyon Game Studio</span>
-                                    </div>
+                                    <span class="timeline-date">2025 — Günümüz</span>
+                                    <span class="timeline-role">Founder</span>
+                                    <span class="timeline-company">Ai-Toyon Game Studio</span>
                                 </div>
                                 <div class="timeline-item">
-
-                                    <div class="timeline-info">
-                                        <span class="timeline-date">2023 — Günümüz</span>
-                                        <span class="timeline-role">Full Stack Developer</span>
-                                        <span class="timeline-company">mitschu.co</span>
-                                    </div>
+                                    <span class="timeline-date">2023 — Günümüz</span>
+                                    <span class="timeline-role">Full Stack Developer</span>
+                                    <span class="timeline-company">mitschu.co</span>
                                 </div>
                             </div>
                         </div>
@@ -130,14 +125,9 @@ if (searchQ) {
                             <h3 class="exp-card-title">Eğitim</h3>
                             <div class="exp-timeline">
                                 <div class="timeline-item">
-                                    <div class="timeline-logo">
-                                        <img src="/logos/ssbl.jpg" alt="Samsun SBL Logo" onerror="this.style.display='none'" />
-                                    </div>
-                                    <div class="timeline-info">
-                                        <span class="timeline-date">2020 — 2025</span>
-                                        <span class="timeline-role">İbrahim Tanrıverdi Sosyal Bilimler Lisesi</span>
-                                        <span class="timeline-company">Mezuniyet</span>
-                                    </div>
+                                    <span class="timeline-date">2020 — 2025</span>
+                                    <span class="timeline-role">Samsun İbrahim Tanrıverdi Sosyal Bilimler Lisesi</span>
+                                    <span class="timeline-company">Mezuniyet</span>
                                 </div>
                             </div>
                         </div>
@@ -260,6 +250,7 @@ if (searchQ) {
                 } catch (e) { console.error("Görsel hatası:", e); }
             }
 
+            // Arka Plan Canlı Parlama Kontrolü
             function updateAmbientGlow(url) {
                 if (window.innerWidth <= 768) return;
                 const glow = document.getElementById('ambient-glow');
@@ -395,7 +386,7 @@ if (searchQ) {
                         let htmlContent = '';
                         topArtists.forEach((artist, index) => {
                             const artistName = artist.name || '';
-                            const playcountText = formatPlaycount(artist.playcount);
+                            const minutes = calculateMinutes(artist.playcount);
                             const imgId = `artist-img-${index}`;
 
                             htmlContent += `
@@ -405,7 +396,7 @@ if (searchQ) {
                                     <div class="bento-overlay">
                                         <div class="bento-meta">
                                             <span class="bento-title">${artistName}</span>
-                                            <span class="bento-sub">${playcountText} dinlendi</span>
+                                            <span class="bento-sub">${minutes} dk dinleme</span>
                                         </div>
                                     </div>
                                 </a>
@@ -428,7 +419,7 @@ if (searchQ) {
                         topAlbums.forEach((album, index) => {
                             const artistName = album.artist?.name || '';
                             const albumName = album.name || '';
-                            const playcountText = formatPlaycount(album.playcount);
+                            const minutes = calculateMinutes(album.playcount);
                             const imgId = `album-img-${index}`;
 
                             htmlContent += `
@@ -439,7 +430,7 @@ if (searchQ) {
                                         <div class="bento-meta">
                                             <span class="bento-title">${albumName}</span>
                                             <span class="bento-artist">${artistName}</span>
-                                            <span class="bento-sub">${playcountText} dinlendi</span>
+                                            <span class="bento-sub">${minutes} dk dinleme</span>
                                         </div>
                                     </div>
                                 </a>
@@ -476,51 +467,15 @@ if (searchQ) {
                 setupPeriodControls();
                 setInterval(fetchLiveTrack, 15000);
             });
-
-document.addEventListener("DOMContentLoaded", () => {
-        const popup = document.getElementById('visitor-popup');
-        const countEl = document.getElementById('visitor-count');
-        const closeBtn = document.getElementById('close-popup');
-        
-        // 1. Sayaç mantığı (Her sayfayı yenilediğinde artar)
-        let visits = parseInt(localStorage.getItem('site_visits') || 1242);
-        visits += 1;
-        localStorage.setItem('site_visits', visits);
-        countEl.textContent = visits.toLocaleString();
-        
-        // 2. Kapatma mantığı (sessionStorage = sadece bu sekme açıkken kapalı kalsın)
-        if (sessionStorage.getItem('popup_closed') !== 'true') {
-            setTimeout(() => {
-                popup.classList.add('visible');
-            }, 1000);
-        }
-
-        closeBtn.addEventListener('click', () => {
-            popup.classList.remove('visible');
-            sessionStorage.setItem('popup_closed', 'true');
-        });
-    });
         </script>
-
-<div id="visitor-popup" class="visitor-popup">
-    <div class="popup-content">
-        <span class="popup-label">Ziyaretçi Sayısı</span>
-        <span id="visitor-count" class="popup-value">0</span>
-    </div>
-    <button id="close-popup" class="close-btn" aria-label="Kapat">×</button>
-</div>
     </body>
 </html>
 
 <style is:global>
-    ::selection {
-        background-color: white;
-        color: black;
-    }
-
+    /* Orijinal CSS mimarisi korunmuş, yeni grid alanları eklenmiştir */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
-        background-color: #030303;
+        background-color: #030303; 
         color: #f5f5f7;
         font-family: 'Inter', -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
@@ -555,10 +510,6 @@ document.addEventListener("DOMContentLoaded", () => {
         transform: translateY(8px);
         transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    .name {
-        color: rgb(255, 50, 50);
-    }
     .start-sequence .word { opacity: 1; filter: blur(0px); transform: translateY(0); }
     .delay-1 { transition-delay: 0.04s; }
     .delay-2 { transition-delay: 0.10s; }
@@ -567,7 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .delay-5 { transition-delay: 0.28s; }
     .delay-6 { transition-delay: 0.38s; }
     .delay-7 { transition-delay: 0.48s; }
-    .delay-8 { transition-delay: 0.58s; }
+    .delay-8 { transition-delay: 0.58s; } /* Müzik Odası ve Footer geçiş animasyonu için optimize edildi */
 
     .wave-emoji {
         display: inline-block;
@@ -598,7 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
         line-height: 1.15; 
         color: #f5f5f7;
     }
-    .muted-text { color: #363636; } 
+    .muted-text { color: #1a1a1c; } 
     
     .section-title { 
         font-family: 'JetBrains Mono', monospace;
@@ -620,7 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     .about-content p { font-size: 1rem; line-height: 1.7; color: #86868b; font-weight: 400; max-width: 640px; }
 
-
+    /* YENİ STİLLER: Deneyim & Eğitim Bento Grid Sistemi */
     .experience-section {
         display: flex;
         flex-direction: column;
@@ -648,37 +599,12 @@ document.addEventListener("DOMContentLoaded", () => {
     .exp-timeline {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 1.25rem;
     }
     .timeline-item {
         display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 1rem;
-        width: 100%;
-    }
-    .timeline-logo {
-        width: 42px;
-        height: 42px;
-        flex-shrink: 0;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-    .timeline-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .timeline-info {
-        display: flex;
         flex-direction: column;
         gap: 0.15rem;
-        min-width: 0;
     }
     .timeline-date {
         font-family: 'JetBrains Mono', monospace;
@@ -716,7 +642,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     .liquid-glass-effect {
         position: relative;
-        background: rgba(255, 255, 255, 0.01);
+        background: rgba(255, 255, 255, 0.01); 
         border: 1px solid rgba(255, 255, 255, 0.03);
         box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(20px);
@@ -791,6 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     @media (max-width: 600px) {
+        /* Mobilde Yeni Bölümün Dikey Akışı (Telefon Uyumluluğu Güvencesi) */
         .experience-grid {
             grid-template-columns: 1fr;
             gap: 0.75rem;
@@ -815,85 +742,4 @@ document.addEventListener("DOMContentLoaded", () => {
         .bento-node:hover { transform: none !important; }
         .bento-node:hover .bento-img { transform: none !important; }
     }
-
-
-.visitor-popup {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    display: grid; /* Grid kullanarak daha keskin hizalama */
-    grid-template-columns: auto auto;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 20px;
-    border-radius: 24px;
-    background: rgba(0, 0, 0, 0.4); /* Apple'ın koyu modu gibi */
-    backdrop-filter: blur(30px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    z-index: 9999;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.visitor-popup.visible { opacity: 1; transform: translateY(0); }
-
-/* Metinleri dikey hizalayalım */
-.popup-text-group {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.popup-label {
-    font-size: 12px; /* Çok daha küçük ve zarif */
-    font-weight: 600;
-    color: #98989d; /* Apple'ın 'tertiary label' rengi */
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.popup-value {
-    padding-left: 5px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #ffffff;
-    font-family: -apple-system, sans-serif;
-}
-
-.close-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: none;
-    color: #98989d;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* MOBİL ADAPTASYON */
-@media (max-width: 480px) {
-    .visitor-popup {
-        bottom: 16px; /* Ekranın daha aşağısına çekildi */
-        right: 16px;  /* Kenarlardan biraz daha açıldı */
-        left: 16px;   /* Mobilde genişlemesi için left eklendi */
-        padding: 10px 16px;
-        border-radius: 18px; /* Köşe yumuşaklığı biraz daha hafifledi */
-        gap: 8px;
-    }
-
-    .popup-label { font-size: 8px; } /* Mobilde etiket daha küçük */
-    .popup-value { font-size: 14px; } /* Mobilde değer daha kompakt */
-    
-    .close-btn {
-        width: 24px; 
-        height: 24px;
-        font-size: 14px;
-    }
-}
 </style>
