@@ -84,8 +84,8 @@ if (searchQ) {
                 
                 <section class="intro-section">
                     <h1 class="welcome-text">
-                        <span class="word delay-1">Merhaba<span class="wave-emoji">👋</span>.</span> <br />
-                        <span class="word delay-2">Ben {name}.</span> <br />
+                        <span class="word delay-1">Merhaba<span class="wave-emoji">👋</span></span> <br />
+                        <span class="word delay-2">Ben <span class="word delay-2 name">{name}</span>.</span> <br />
                         <span class="word delay-3 muted-text">Dijital deneyimler</span> <br />
                         <span class="word delay-4 muted-text">tasarlayan ve geliştiren</span> <br />
                         <span class="word delay-5 muted-text">bir arayüz geliştirici.</span>
@@ -109,14 +109,20 @@ if (searchQ) {
                             <h3 class="exp-card-title">Deneyim</h3>
                             <div class="exp-timeline">
                                 <div class="timeline-item">
-                                    <span class="timeline-date">2025 — Günümüz</span>
-                                    <span class="timeline-role">Founder</span>
-                                    <span class="timeline-company">Ai-Toyon Game Studio</span>
+
+                                    <div class="timeline-info">
+                                        <span class="timeline-date">2025 — Günümüz</span>
+                                        <span class="timeline-role">Founder</span>
+                                        <span class="timeline-company">Ai-Toyon Game Studio</span>
+                                    </div>
                                 </div>
                                 <div class="timeline-item">
-                                    <span class="timeline-date">2023 — Günümüz</span>
-                                    <span class="timeline-role">Full Stack Developer</span>
-                                    <span class="timeline-company">mitschu.co</span>
+
+                                    <div class="timeline-info">
+                                        <span class="timeline-date">2023 — Günümüz</span>
+                                        <span class="timeline-role">Full Stack Developer</span>
+                                        <span class="timeline-company">mitschu.co</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -125,9 +131,14 @@ if (searchQ) {
                             <h3 class="exp-card-title">Eğitim</h3>
                             <div class="exp-timeline">
                                 <div class="timeline-item">
-                                    <span class="timeline-date">2020 — 2025</span>
-                                    <span class="timeline-role">Samsun İbrahim Tanrıverdi Sosyal Bilimler Lisesi</span>
-                                    <span class="timeline-company">Mezuniyet</span>
+                                    <div class="timeline-logo">
+                                        <img src="/logos/ssbl.jpg" alt="Samsun SBL Logo" onerror="this.style.display='none'" />
+                                    </div>
+                                    <div class="timeline-info">
+                                        <span class="timeline-date">2020 — 2025</span>
+                                        <span class="timeline-role">İbrahim Tanrıverdi Sosyal Bilimler Lisesi</span>
+                                        <span class="timeline-company">Mezuniyet</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -473,6 +484,7 @@ if (searchQ) {
 
 <style is:global>
     /* Orijinal CSS mimarisi korunmuş, yeni grid alanları eklenmiştir */
+    ::selection { background-color: white; color: black; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         background-color: #030303; 
@@ -510,6 +522,7 @@ if (searchQ) {
         transform: translateY(8px);
         transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    .name { color: rgb(252, 41, 41); }
     .start-sequence .word { opacity: 1; filter: blur(0px); transform: translateY(0); }
     .delay-1 { transition-delay: 0.04s; }
     .delay-2 { transition-delay: 0.10s; }
@@ -549,7 +562,7 @@ if (searchQ) {
         line-height: 1.15; 
         color: #f5f5f7;
     }
-    .muted-text { color: #1a1a1c; } 
+    .muted-text { color: #474747; } 
     
     .section-title { 
         font-family: 'JetBrains Mono', monospace;
@@ -571,7 +584,6 @@ if (searchQ) {
     
     .about-content p { font-size: 1rem; line-height: 1.7; color: #86868b; font-weight: 400; max-width: 640px; }
 
-    /* YENİ STİLLER: Deneyim & Eğitim Bento Grid Sistemi */
     .experience-section {
         display: flex;
         flex-direction: column;
@@ -599,12 +611,37 @@ if (searchQ) {
     .exp-timeline {
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: 1.5rem;
     }
     .timeline-item {
         display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+    }
+    .timeline-logo {
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .timeline-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .timeline-info {
+        display: flex;
         flex-direction: column;
         gap: 0.15rem;
+        min-width: 0;
     }
     .timeline-date {
         font-family: 'JetBrains Mono', monospace;
