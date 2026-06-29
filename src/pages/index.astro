@@ -154,6 +154,21 @@ if (searchQ) {
 
                 </section>
 
+                <!-- Footer Bileşeni -->
+                <footer class="site-footer word delay-7">
+                    <div class="footer-divider"></div>
+                    <div class="footer-content">
+                        <div class="footer-credits">
+                            made with <span class="animated-heart">❤️</span> by {name}
+                        </div>
+                        <div class="footer-links">
+                            <a href="https://github.com" target="_blank" class="footer-link-item">GitHub</a>
+                            <a href="https://linkedin.com" target="_blank" class="footer-link-item">LinkedIn</a>
+                            <a href={`https://last.fm/user/${LASTFM_USERNAME}`} target="_blank" class="footer-link-item">Last.fm</a>
+                        </div>
+                    </div>
+                </footer>
+
             </main>
         </div>
 
@@ -201,7 +216,6 @@ if (searchQ) {
             }
 
             function updateAmbientGlow(url) {
-                // Mobilde performansı korumak için arka plan aurasını çalıştırmıyoruz
                 if (window.innerWidth <= 768) return;
                 
                 const glow = document.getElementById('ambient-glow');
@@ -227,13 +241,20 @@ if (searchQ) {
                 }
             }
 
+            // Şarkılar harici alanlarda kullanılacak dakika hesaplayıcı
             function calculateMinutes(playcount) {
                 const count = parseInt(playcount, 10) || 0;
                 return Math.round(count * 3.5);
             }
 
+            // Sadece şarkılarda kullanılacak saf tekrar sayısı biçimlendirici
+            function formatPlaycount(playcount) {
+                const count = parseInt(playcount, 10) || 0;
+                return `${count} kez`;
+            }
+
             function initLiquidGlassTracking() {
-                if (window.innerWidth <= 768) return; // Mobilde mouse takip efektini kapatarak işlemciyi yormuyoruz
+                if (window.innerWidth <= 768) return;
                 
                 const cards = document.querySelectorAll('.liquid-glass-effect, .bento-node');
                 cards.forEach(card => {
@@ -289,7 +310,7 @@ if (searchQ) {
                     const defaultTrackImg = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=60";
                     const defaultArtistImg = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&auto=format&fit=crop&q=60";
 
-                    // 1. ŞARKILAR
+                    // 1. ŞARKILAR (Sadece Tekrar Sayısı Gösterir)
                     const topTracksRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
                     const grid = document.getElementById('top-tracks-grid');
                     if (topTracksRes.ok && grid) {
@@ -300,7 +321,7 @@ if (searchQ) {
                         topTracks.forEach((item, index) => {
                             const artistName = item.artist?.name || '';
                             const trackName = item.name || '';
-                            const minutes = calculateMinutes(item.playcount);
+                            const playcountText = formatPlaycount(item.playcount);
                             const imgId = `track-img-${index}`;
                             
                             htmlContent += `
@@ -311,7 +332,7 @@ if (searchQ) {
                                         <div class="bento-meta">
                                             <span class="bento-title">${trackName}</span>
                                             <span class="bento-artist">${artistName}</span>
-                                            <span class="bento-sub">${minutes} dk dinleme</span>
+                                            <span class="bento-sub">${playcountText} dinlendi</span>
                                         </div>
                                     </div>
                                 </a>
@@ -323,7 +344,7 @@ if (searchQ) {
                         });
                     }
 
-                    // 2. SANATÇILAR
+                    // 2. SANATÇILAR (Dakika Hesaplamasını Korur)
                     const topArtistsRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
                     const artistGrid = document.getElementById('top-artists-grid');
                     if (topArtistsRes.ok && artistGrid) {
@@ -355,7 +376,7 @@ if (searchQ) {
                         });
                     }
 
-                    // 3. ALBÜMLER
+                    // 3. ALBÜMLER (Dakika Hesaplamasını Korur)
                     const topAlbumsRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
                     const albumStrip = document.getElementById('top-albums-grid');
                     if (topAlbumsRes.ok && albumStrip) {
@@ -420,6 +441,7 @@ if (searchQ) {
 </html>
 
 <style is:global>
+    /* Orijinal CSS stilleri (Footer ve animasyon kuralları dahil) aynen korunmuştur. */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         background-color: #030303; 
@@ -707,20 +729,77 @@ if (searchQ) {
         transform: scale(1.03);
     }
 
-    /* ==========================================================================
-       RESPONSIVE BREAKPOINTS (Tablet & Mobil Uyumluluk Katmanı)
-       ========================================================================== */
+    .site-footer {
+        margin-top: 2rem;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
 
-    /* Tablet & Küçük Ekranlar */
+    .footer-divider {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    }
+
+    .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.2rem;
+    }
+
+    .footer-credits {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        color: #444446;
+        letter-spacing: -0.01em;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .animated-heart {
+        display: inline-block;
+        animation: heartbeat 1.4s infinite cubic-bezier(0.215, 0.610, 0.355, 1);
+        transform-origin: center;
+    }
+
+    @keyframes heartbeat {
+        0% { transform: scale(1); }
+        14% { transform: scale(1.24); }
+        28% { transform: scale(1); }
+        42% { transform: scale(1.20); }
+        70% { transform: scale(1); }
+    }
+
+    .footer-links {
+        display: flex;
+        gap: 1.2rem;
+    }
+
+    .footer-link-item {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #86868b;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .footer-link-item:hover {
+        color: #f5f5f7;
+    }
+
     @media (max-width: 900px) {
         .bento-seamless-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
 
-    /* Mobil Cihazlar (Telefonlar) */
     @media (max-width: 600px) {
-        /* Sayfa Başlığı ve Butonların Alt Alta Düzenli Durması İçin */
         .music-header-block .title-area {
             flex-direction: column;
             align-items: flex-start;
@@ -739,19 +818,16 @@ if (searchQ) {
             font-size: 0.68rem;
         }
 
-        /* 2 Sütunlu Dengeli Mobil Bento Izgarası */
         .bento-seamless-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 0.5rem;
         }
 
-        /* Mobilde Kutuların Aşırı Küçülmesini Önlemek İçin Kare Oranını Serbest Bırakıyoruz */
         .bento-node {
             aspect-ratio: auto;
             height: 155px;
         }
 
-        /* Büyük (#1) Hücre Mobilde de Şık ve Okunabilir Kalsın */
         .bento-big {
             grid-column: span 2;
             grid-row: span 1;
@@ -762,7 +838,6 @@ if (searchQ) {
             font-size: 1rem;
         }
 
-        /* Canlı Çalan Şarkı Kartı Mobilde Daha Kompakt */
         .current-track-card {
             padding: 0.85rem;
             gap: 1rem;
@@ -777,7 +852,12 @@ if (searchQ) {
             font-size: 0.9rem;
         }
 
-        /* Masaüstü Efektlerini Kapat */
+        .footer-content {
+            flex-direction: column-reverse;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
         .ambient-glow { display: none !important; }
         .bento-node:hover { transform: none !important; }
         .bento-node:hover .bento-img { transform: none !important; }
