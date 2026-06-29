@@ -2,12 +2,17 @@
 // src/pages/index.astro
 export const prerender = false;
 
-const name = "seromitschu";
+const name = import.meta.env.PUBLIC_NAME;
 
-const LASTFM_API_KEY = "fa70536a9be667662278e223ac3b3d29";
-const LASTFM_USERNAME = "serooooooooooo";
-const SPOTIFY_CLIENT_ID = "0c918b0ede8f4ddebb17b7d0a0bd2f8f";
-const SPOTIFY_CLIENT_SECRET = "0e0caa044a3f4a1a8cadac29238fe0b2";
+const LASTFM_API_KEY = import.meta.env.PUBLIC_LASTFM_API_KEY;
+const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
+const SPOTIFY_CLIENT_ID = import.meta.env.SPOTIFY_CLIENT_ID;
+const SPOTIFY_CLIENT_SECRET = import.meta.env.SPOTIFY_CLIENT_SECRET;
+
+const LINK_GITHUB = import.meta.env.LINK_GITHUB;
+const LINK_SPOTIFY = import.meta.env.LINK_SPOTIFY;
+const LINK_LINKEDIN = import.meta.env.LINK_LINKEDIN;
+const LINK_DISCORD = import.meta.env.LINK_DISCORD;
 
 const urlObj = new URL(Astro.request.url);
 const searchQ = urlObj.searchParams.get('q');
@@ -24,7 +29,6 @@ if (searchQ) {
       },
       body: 'grant_type=client_credentials'
     });
-
     const tokenData = await tokenRes.json();
     const accessToken = tokenData.access_token;
 
@@ -40,7 +44,6 @@ if (searchQ) {
     const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(spotifyQuery)}&type=${searchType === 'album' ? 'album' : searchType}&limit=1`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
-
     const searchData = await searchRes.json();
     let imageUrl = null;
 
@@ -56,7 +59,7 @@ if (searchQ) {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
-  } catch (e) {
+  } catch (e: any) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
@@ -67,7 +70,7 @@ if (searchQ) {
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-        <title>{name} | Portfolyo</title>
+        <title>{name}</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -93,13 +96,46 @@ if (searchQ) {
                     <h2 class="section-title">Hakkımda</h2>
                     <div class="about-content">
                         <p>
-                            Tasarım ve kodun kesiştiği noktada, insanı yormayan temiz arayüzler üretmeye odaklanıyorum. 
+                            Tasarım ve kodun kesiştiği noktada, insanı yormayan temiz arayüzler üretmeye odaklanıyorum.
                             Gereksiz tüm süslemelerden arındırılmış, işlevsel ve performanslı web deneyimleri geliştirmek en büyük motivasyonum.
                         </p>
                     </div>
                 </section>
 
-                <section class="music-section word delay-7">
+                <section class="experience-section word delay-7">
+                    <div class="experience-grid">
+                        
+                        <div class="exp-card liquid-glass-effect">
+                            <h3 class="exp-card-title">Deneyim</h3>
+                            <div class="exp-timeline">
+                                <div class="timeline-item">
+                                    <span class="timeline-date">2025 — Günümüz</span>
+                                    <span class="timeline-role">Founder</span>
+                                    <span class="timeline-company">Ai-Toyon Game Studio</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-date">2023 — Günümüz</span>
+                                    <span class="timeline-role">Full Stack Developer</span>
+                                    <span class="timeline-company">mitschu.co</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="exp-card liquid-glass-effect">
+                            <h3 class="exp-card-title">Eğitim</h3>
+                            <div class="exp-timeline">
+                                <div class="timeline-item">
+                                    <span class="timeline-date">2020 — 2025</span>
+                                    <span class="timeline-role">Samsun İbrahim Tanrıverdi Sosyal Bilimler Lisesi</span>
+                                    <span class="timeline-company">Mezuniyet</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <section class="music-section word delay-8">
                     
                     <div class="music-header-block">
                         <div class="title-area">
@@ -154,17 +190,17 @@ if (searchQ) {
 
                 </section>
 
-                <!-- Footer Bileşeni -->
-                <footer class="site-footer word delay-7">
+                <footer class="site-footer word delay-8">
                     <div class="footer-divider"></div>
                     <div class="footer-content">
                         <div class="footer-credits">
                             made with <span class="animated-heart">❤️</span> by {name}
                         </div>
                         <div class="footer-links">
-                            <a href="https://github.com" target="_blank" class="footer-link-item">GitHub</a>
-                            <a href="https://linkedin.com" target="_blank" class="footer-link-item">LinkedIn</a>
-                            <a href={`https://last.fm/user/${LASTFM_USERNAME}`} target="_blank" class="footer-link-item">Last.fm</a>
+                            <a href={`${LINK_SPOTIFY}`} target="_blank" class="footer-link-item">Spotify</a>
+                            <a href={`${LINK_DISCORD}`} target="_blank" class="footer-link-item">Discord</a>
+                            <a href={`${LINK_GITHUB}`} target="_blank" class="footer-link-item">GitHub</a>
+                            <a href={`${LINK_LINKEDIN}`} target="_blank" class="footer-link-item">LinkedIn</a>
                         </div>
                     </div>
                 </footer>
@@ -178,7 +214,6 @@ if (searchQ) {
 
             function initLazyLoading() {
                 if (imageObserver) imageObserver.disconnect();
-
                 imageObserver = new IntersectionObserver((entries, observer) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -215,9 +250,9 @@ if (searchQ) {
                 } catch (e) { console.error("Görsel hatası:", e); }
             }
 
+            // Arka Plan Canlı Parlama Kontrolü
             function updateAmbientGlow(url) {
                 if (window.innerWidth <= 768) return;
-                
                 const glow = document.getElementById('ambient-glow');
                 if (glow) {
                     glow.style.backgroundImage = `url('${url}')`;
@@ -241,13 +276,11 @@ if (searchQ) {
                 }
             }
 
-            // Şarkılar harici alanlarda kullanılacak dakika hesaplayıcı
             function calculateMinutes(playcount) {
                 const count = parseInt(playcount, 10) || 0;
                 return Math.round(count * 3.5);
             }
 
-            // Sadece şarkılarda kullanılacak saf tekrar sayısı biçimlendirici
             function formatPlaycount(playcount) {
                 const count = parseInt(playcount, 10) || 0;
                 return `${count} kez`;
@@ -255,7 +288,6 @@ if (searchQ) {
 
             function initLiquidGlassTracking() {
                 if (window.innerWidth <= 768) return;
-                
                 const cards = document.querySelectorAll('.liquid-glass-effect, .bento-node');
                 cards.forEach(card => {
                     card.removeAttribute('style');
@@ -310,7 +342,7 @@ if (searchQ) {
                     const defaultTrackImg = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=60";
                     const defaultArtistImg = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&auto=format&fit=crop&q=60";
 
-                    // 1. ŞARKILAR (Sadece Tekrar Sayısı Gösterir)
+                    // 1. ŞARKILAR
                     const topTracksRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
                     const grid = document.getElementById('top-tracks-grid');
                     if (topTracksRes.ok && grid) {
@@ -344,7 +376,7 @@ if (searchQ) {
                         });
                     }
 
-                    // 2. SANATÇILAR (Dakika Hesaplamasını Korur)
+                    // 2. SANATÇILAR
                     const topArtistsRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
                     const artistGrid = document.getElementById('top-artists-grid');
                     if (topArtistsRes.ok && artistGrid) {
@@ -376,7 +408,7 @@ if (searchQ) {
                         });
                     }
 
-                    // 3. ALBÜMLER (Dakika Hesaplamasını Korur)
+                    // 3. ALBÜMLER
                     const topAlbumsRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
                     const albumStrip = document.getElementById('top-albums-grid');
                     if (topAlbumsRes.ok && albumStrip) {
@@ -411,7 +443,6 @@ if (searchQ) {
                     }
 
                     initLiquidGlassTracking();
-
                 } catch (error) { console.error("İstatistik hatası:", error); }
             }
 
@@ -441,11 +472,11 @@ if (searchQ) {
 </html>
 
 <style is:global>
-    /* Orijinal CSS stilleri (Footer ve animasyon kuralları dahil) aynen korunmuştur. */
+    /* Orijinal CSS mimarisi korunmuş, yeni grid alanları eklenmiştir */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         background-color: #030303; 
-        color: #f5f5f7; 
+        color: #f5f5f7;
         font-family: 'Inter', -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
         height: 100%;
@@ -487,6 +518,7 @@ if (searchQ) {
     .delay-5 { transition-delay: 0.28s; }
     .delay-6 { transition-delay: 0.38s; }
     .delay-7 { transition-delay: 0.48s; }
+    .delay-8 { transition-delay: 0.58s; } /* Müzik Odası ve Footer geçiş animasyonu için optimize edildi */
 
     .wave-emoji {
         display: inline-block;
@@ -511,7 +543,7 @@ if (searchQ) {
 
     .welcome-text { 
         font-family: 'Inter', sans-serif;
-        font-weight: 700; 
+        font-weight: 700;
         font-size: clamp(2rem, 5.5vw, 3.4rem); 
         letter-spacing: -0.04em; 
         line-height: 1.15; 
@@ -520,12 +552,12 @@ if (searchQ) {
     .muted-text { color: #1a1a1c; } 
     
     .section-title { 
-        font-family: 'JetBrains Mono', monospace; 
+        font-family: 'JetBrains Mono', monospace;
         font-size: 0.68rem; 
         text-transform: uppercase; 
         letter-spacing: 0.2em; 
         font-weight: 700; 
-        color: #444446; 
+        color: #444446;
     }
     
     .subsection-title { 
@@ -539,40 +571,86 @@ if (searchQ) {
     
     .about-content p { font-size: 1rem; line-height: 1.7; color: #86868b; font-weight: 400; max-width: 640px; }
 
-    .music-section { display: flex; flex-direction: column; gap: 4.5rem; }
-    .sub-music-block { width: 100%; }
-    
-    .music-header-block {
+    /* YENİ STİLLER: Deneyim & Eğitim Bento Grid Sistemi */
+    .experience-section {
+        display: flex;
+        flex-direction: column;
+    }
+    .experience-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        width: 100%;
+    }
+    .exp-card {
+        padding: 1.5rem;
+        border-radius: 16px;
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
     }
-    
-    .music-header-block .title-area {
+    .exp-card-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #a1a1a6;
+        letter-spacing: -0.02em;
+    }
+    .exp-timeline {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+    .timeline-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+    .timeline-date {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        color: #444446;
+        font-weight: 700;
+    }
+    .timeline-role {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #f5f5f7;
+        letter-spacing: -0.01em;
+    }
+    .timeline-company {
+        font-size: 0.85rem;
+        color: #86868b;
     }
 
+    /* Sıvı Cam Hover Işık Takibi Prototipi */
+    .liquid-glass-effect::before, .bento-node::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(800px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(255, 255, 255, 0.04), transparent 40%);
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    .music-section { display: flex; flex-direction: column; gap: 4.5rem; }
+    .sub-music-block { width: 100%; }
+    
+    .music-header-block { display: flex; flex-direction: column; gap: 1.5rem; }
+    .music-header-block .title-area { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
     .current-track-card-link { text-decoration: none; color: inherit; display: block; width: 100%; }
 
     .liquid-glass-effect {
         position: relative;
         background: rgba(255, 255, 255, 0.01); 
-        border: 1px solid rgba(255, 255, 255, 0.03); 
+        border: 1px solid rgba(255, 255, 255, 0.03);
         box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         overflow: hidden;
-        transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    .current-track-card-link:hover .liquid-glass-effect {
-        border-color: rgba(255, 255, 255, 0.08); 
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
-    }
+    .current-track-card-link:hover .liquid-glass-effect { border-color: rgba(255, 255, 255, 0.08); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8); }
 
     .period-switcher { display: flex; padding: 0.15rem; border-radius: 20px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); }
     .period-btn { font-family: 'Inter', sans-serif; background: transparent; border: none; color: #48484a; padding: 0.4rem 1rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; border-radius: 16px; transition: color 0.2s ease, background-color 0.2s ease; min-height: 34px; }
@@ -598,174 +676,29 @@ if (searchQ) {
     .track-artist { font-size: 1rem; font-weight: 400; color: #86868b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.01em; }
     .music-album { font-size: 0.8rem; color: #48484a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
 
-    .bento-seamless-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        grid-auto-rows: 1fr;
-        gap: 0.75rem;
-        width: 100%;
-    }
-    
-    .bento-node {
-        display: block;
-        width: 100%;
-        aspect-ratio: 1; 
-        overflow: hidden;
-        position: relative;
-        border-radius: 12px;
-        background: #0d0d0f;
-        border: 1px solid rgba(255, 255, 255, 0.02);
-        text-decoration: none;
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s;
-    }
+    .bento-seamless-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; gap: 0.75rem; width: 100%; }
+    .bento-node { display: block; width: 100%; aspect-ratio: 1; overflow: hidden; position: relative; border-radius: 12px; background: #0d0d0f; border: 1px solid rgba(255, 255, 255, 0.02); text-decoration: none; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s; }
+    .bento-big { grid-column: span 2; grid-row: span 2; }
+    .bento-rank { position: absolute; top: 0.75rem; left: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); padding: 0.2rem 0.5rem; border-radius: 6px; color: #f5f5f7; z-index: 7; border: 1px solid rgba(255, 255, 255, 0.05); }
+    .bento-big .bento-rank { font-size: 0.9rem; padding: 0.3rem 0.7rem; background: #30d158; color: #000; border: none; }
+    .bento-img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.65); transition: filter 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    .bento-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(3, 3, 4, 0.95) 0%, rgba(3, 3, 4, 0.3) 70%, rgba(3, 3, 4, 0) 100%); display: flex; align-items: flex-end; padding: 0.8rem; z-index: 6; }
+    .bento-big .bento-overlay { padding: 1.2rem; }
+    .bento-meta { display: flex; flex-direction: column; gap: 0.1rem; width: 100%; }
+    .bento-title { font-size: 0.75rem; font-weight: 600; color: #f5f5f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bento-big .bento-title { font-size: 1.1rem; letter-spacing: -0.02em; }
+    .bento-artist { font-size: 0.68rem; font-weight: 400; color: #86868b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bento-big .bento-artist { font-size: 0.85rem; margin-top: 0.1rem; }
+    .bento-sub { font-size: 0.6rem; font-weight: 500; color: #444446; font-family: 'JetBrains Mono', monospace; margin-top: 0.2rem; }
+    .bento-big .bento-sub { font-size: 0.68rem; color: #86868b; margin-top: 0.3rem; }
+    .bento-node:hover { border-color: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+    .bento-node:hover .bento-img { filter: brightness(0.85); transform: scale(1.03); }
 
-    .bento-big {
-        grid-column: span 2;
-        grid-row: span 2;
-    }
-
-    .bento-rank {
-        position: absolute;
-        top: 0.75rem;
-        left: 0.75rem;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
-        font-weight: 700;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        padding: 0.2rem 0.5rem;
-        border-radius: 6px;
-        color: #f5f5f7;
-        z-index: 7;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .bento-big .bento-rank {
-        font-size: 0.9rem;
-        padding: 0.3rem 0.7rem;
-        background: #30d158;
-        color: #000;
-        border: none;
-    }
-
-    .bento-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        filter: brightness(0.65);
-        transition: filter 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .bento-overlay {
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(to top, rgba(3, 3, 4, 0.95) 0%, rgba(3, 3, 4, 0.3) 70%, rgba(3, 3, 4, 0) 100%);
-        display: flex;
-        align-items: flex-end;
-        padding: 0.8rem;
-        z-index: 6;
-    }
-
-    .bento-big .bento-overlay {
-        padding: 1.2rem;
-    }
-
-    .bento-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 0.1rem;
-        width: 100%;
-    }
-
-    .bento-title {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #f5f5f7;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .bento-big .bento-title {
-        font-size: 1.1rem;
-        letter-spacing: -0.02em;
-    }
-
-    .bento-artist {
-        font-size: 0.68rem;
-        font-weight: 400;
-        color: #86868b;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .bento-big .bento-artist {
-        font-size: 0.85rem;
-        margin-top: 0.1rem;
-    }
-
-    .bento-sub {
-        font-size: 0.6rem;
-        font-weight: 500;
-        color: #444446;
-        font-family: 'JetBrains Mono', monospace;
-        margin-top: 0.2rem;
-    }
-
-    .bento-big .bento-sub {
-        font-size: 0.68rem;
-        color: #86868b;
-        margin-top: 0.3rem;
-    }
-
-    .bento-node:hover {
-        border-color: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
-    }
-    .bento-node:hover .bento-img {
-        filter: brightness(0.85);
-        transform: scale(1.03);
-    }
-
-    .site-footer {
-        margin-top: 2rem;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-
-    .footer-divider {
-        width: 100%;
-        height: 1px;
-        background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-    }
-
-    .footer-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1.2rem;
-    }
-
-    .footer-credits {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.72rem;
-        color: #444446;
-        letter-spacing: -0.01em;
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-    }
-
-    .animated-heart {
-        display: inline-block;
-        animation: heartbeat 1.4s infinite cubic-bezier(0.215, 0.610, 0.355, 1);
-        transform-origin: center;
-    }
+    .site-footer { margin-top: 2rem; width: 100%; display: flex; flex-direction: column; gap: 1.5rem; }
+    .footer-divider { width: 100%; height: 1px; background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%); }
+    .footer-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.2rem; }
+    .footer-credits { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #444446; letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.35rem; }
+    .animated-heart { display: inline-block; animation: heartbeat 1.4s infinite cubic-bezier(0.215, 0.610, 0.355, 1); transform-origin: center; }
 
     @keyframes heartbeat {
         0% { transform: scale(1); }
@@ -775,89 +708,36 @@ if (searchQ) {
         70% { transform: scale(1); }
     }
 
-    .footer-links {
-        display: flex;
-        gap: 1.2rem;
-    }
-
-    .footer-link-item {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: #86868b;
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    .footer-link-item:hover {
-        color: #f5f5f7;
-    }
+    .footer-links { display: flex; gap: 1.2rem; }
+    .footer-link-item { font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500; color: #86868b; text-decoration: none; transition: color 0.3s ease; }
+    .footer-link-item:hover { color: #f5f5f7; }
 
     @media (max-width: 900px) {
-        .bento-seamless-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
+        .bento-seamless-grid { grid-template-columns: repeat(3, 1fr); }
     }
 
     @media (max-width: 600px) {
-        .music-header-block .title-area {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1.2rem;
+        /* Mobilde Yeni Bölümün Dikey Akışı (Telefon Uyumluluğu Güvencesi) */
+        .experience-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
         }
-        
-        .period-switcher {
-            width: 100%;
-            justify-content: space-between;
-        }
-        
-        .period-btn {
-            flex: 1;
-            text-align: center;
-            padding: 0.5rem 0.2rem;
-            font-size: 0.68rem;
+        .exp-card {
+            padding: 1.2rem;
+            border-radius: 14px;
         }
 
-        .bento-seamless-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.5rem;
-        }
-
-        .bento-node {
-            aspect-ratio: auto;
-            height: 155px;
-        }
-
-        .bento-big {
-            grid-column: span 2;
-            grid-row: span 1;
-            height: 180px;
-        }
-
-        .bento-big .bento-title {
-            font-size: 1rem;
-        }
-
-        .current-track-card {
-            padding: 0.85rem;
-            gap: 1rem;
-        }
-        
-        .img-wrapper-live {
-            width: 56px;
-            height: 56px;
-        }
-
-        .track-title, .track-artist {
-            font-size: 0.9rem;
-        }
-
-        .footer-content {
-            flex-direction: column-reverse;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
+        .music-header-block .title-area { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
+        .period-switcher { width: 100%; justify-content: space-between; }
+        .period-btn { flex: 1; text-align: center; padding: 0.5rem 0.2rem; font-size: 0.68rem; }
+        .bento-seamless-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+        .bento-node { aspect-ratio: auto; height: 155px; }
+        .bento-big { grid-column: span 2; grid-row: span 1; height: 180px; }
+        .bento-big .bento-title { font-size: 1rem; }
+        .current-track-card { padding: 0.85rem; gap: 1rem; }
+        .img-wrapper-live { width: 56px; height: 56px; }
+        .track-title, .track-artist { font-size: 0.9rem; }
+        .footer-content { flex-direction: column-reverse; align-items: flex-start; gap: 1rem; }
         .ambient-glow { display: none !important; }
         .bento-node:hover { transform: none !important; }
         .bento-node:hover .bento-img { transform: none !important; }
