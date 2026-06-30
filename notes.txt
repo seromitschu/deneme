@@ -2,3 +2,6 @@ const LASTFM_API_KEY = "fa70536a9be667662278e223ac3b3d29";
 const LASTFM_USERNAME = "serooooooooooo";
 const SPOTIFY_CLIENT_ID = "0c918b0ede8f4ddebb17b7d0a0bd2f8f";
 const SPOTIFY_CLIENT_SECRET = "0e0caa044a3f4a1a8cadac29238fe0b2";
+
+const supabaseUrl = 'https://brfcnnlvrywtplfacwcv.supabase.co'; 
+const supabaseKey = 'sb_publishable_fAWMggTPsfco2IhadpQFJQ_rdm5LsA9';

@@ -6,9 +6,10 @@
 import Layout from '../layouts/Layout.astro';
 import Intro from '../components/Intro.astro';
 import About from '../components/About.astro';
-
+import Guestbook from '../components/GuestBook.astro';
 import Experience from '../components/Experience.astro';
 import MusicRoom from '../components/MusicRoom.astro';
+import Gallery from '../components/Gallery.astro';
 import Footer from '../components/Footer.astro';
 
 const name = import.meta.env.PUBLIC_NAME;
@@ -30,7 +31,9 @@ const LINKS = {
             
             <div class="word delay-4"><Experience /></div>
             <div class="word delay-5"><MusicRoom /></div>
-            <div class="word delay-6"><Footer name={name} links={LINKS} /></div>
+            <div class="word delay-6"><Guestbook /></div>
+            <div class="word delay-7"><Gallery /></div>
+            <div class="word delay-8"><Footer name={name} links={LINKS} /></div>
         </main>
     </div>
 </Layout>
@@ -69,4 +72,6 @@ const LINKS = {
     .delay-4 { transition-delay: 0.4s; }
     .delay-5 { transition-delay: 0.5s; }
     .delay-6 { transition-delay: 0.6s; }
+    .delay-7 { transition-delay: 0.7s; }
+    .delay-8 { transition-delay: 0.8s; }
 </style>

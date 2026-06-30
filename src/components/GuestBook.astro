@@ -1,0 +1,423 @@
+---
+export const prerender = false;
+
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 
+  (typeof import.meta.env !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_URL : '') || 
+  (typeof process !== 'undefined' && process.env ? process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL : '') || 
+  'https://brfcnnlvrywtplfacwcv.supabase.co'; 
+
+const supabaseKey = 
+  (typeof import.meta.env !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_ANON_KEY : '') || 
+  (typeof process !== 'undefined' && process.env ? process.env.PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY : '') || 
+  'sb_publishable_fAWMggTPsfco2IhadpQFJQ_rdm5LsA9';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const url = new URL(Astro.request.url);
+const currentPage = parseInt(url.searchParams.get('page') || '1', 10);
+const itemsPerPage = 5;
+
+// Sadece Mesaj Listeleme Katmanı (GET)
+let totalMessages = 0;
+let messages = [];
+
+try {
+  const { count } = await supabase
+    .from('guestbook')
+    .select('*', { count: 'exact', head: true });
+  totalMessages = count || 0;
+
+  const from = (currentPage - 1) * itemsPerPage;
+  const to = from + itemsPerPage - 1;
+
+  const { data } = await supabase
+    .from('guestbook')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .range(from, to);
+  messages = data || [];
+} catch (err) {
+  console.error('Guestbook listeleme hatası:', err);
+}
+
+const totalPages = Math.ceil(totalMessages / itemsPerPage);
+---
+
+<section class="guestbook-section word delay-8" id="guestbook">
+  <div class="guestbook-header-block">
+    <div class="title-area">
+      <h2 class="section-title">// GUESTBOOK</h2>
+      <span class="guestbook-counter" id="guestbook-count">[{totalMessages}]</span>
+    </div>
+  </div>
+
+  <form id="guestbook-form" class="guestbook-form liquid-glass-effect">
+    <div class="form-grid-inner">
+      <input 
+        type="text" 
+        name="name" 
+        placeholder="ad / alias" 
+        required 
+        maxlength="50"
+        autocomplete="off"
+      />
+      <input 
+        type="text" 
+        name="message" 
+        placeholder="mesaj bırakın..." 
+        required 
+        maxlength="300"
+        autocomplete="off"
+      />
+      <button type="submit" id="submit-btn">GÖNDER</button>
+    </div>
+  </form>
+
+  <div class="messages-stack" id="messages-container">
+    {messages.map((msg) => (
+      <div class="message-card liquid-glass-effect">
+        <div class="card-top">
+          <span class="username">@{msg.name.toLowerCase()}</span>
+          <span class="timestamp">
+            {new Date(msg.created_at).toLocaleDateString('tr-TR', {hour: '2-digit', minute:'2-digit'})}
+          </span>
+        </div>
+        <p class="content">{msg.message}</p>
+      </div>
+    ))}
+  </div>
+
+  {totalPages > 1 && (
+    <div class="pagination-wrapper liquid-glass-effect">
+      {currentPage > 1 ? (
+        <a href={`?page=${currentPage - 1}#guestbook`} class="nav-arrow">&lt; DAHA YENİLER</a>
+      ) : (
+        <span class="nav-arrow disabled">&lt; DAHA YENİLER</span>
+      )}
+      
+      <span class="state-indicator">{currentPage} / {totalPages}</span>
+
+      {currentPage < totalPages ? (
+        <a href={`?page=${currentPage + 1}#guestbook`} class="nav-arrow">DAHA ESKİLER &gt;</a>
+      ) : (
+        <span class="nav-arrow disabled">DAHA ESKİLER &gt;</span>
+      )}
+    </div>
+  )}
+</section>
+
+<script>
+  function initGuestbookGlassTracking() {
+    if (window.innerWidth <= 768) return;
+    const cards = document.querySelectorAll('.guestbook-section .liquid-glass-effect');
+    cards.forEach(card => {
+      (card as HTMLElement).removeAttribute('style');
+      card.addEventListener('mousemove', (e: any) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        (card as HTMLElement).style.setProperty('--mouse-x', `${x}px`);
+        (card as HTMLElement).style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+  }
+
+  const form = document.getElementById('guestbook-form') as HTMLFormElement;
+  const btn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const container = document.getElementById('messages-container');
+  const countEl = document.getElementById('guestbook-count');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (btn) { btn.disabled = true; btn.innerText = "..."; }
+
+      const formData = new FormData(form);
+
+      try {
+        // ARTIK DOĞRUDAN OLUŞTURDUĞUMUZ BAĞIMSIZ API ENDPOINT'İNE GİDİYORUZ
+        const response = await fetch('/api/guestbook', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            const msg = result.data;
+            const msgDate = new Date(msg.created_at).toLocaleDateString('tr-TR', {
+              hour: '2-digit', 
+              minute:'2-digit'
+            });
+
+            const newItem = document.createElement('div');
+            newItem.className = 'message-card liquid-glass-effect';
+            newItem.innerHTML = `
+              <div class="card-top">
+                <span class="username">@${msg.name.toLowerCase()}</span>
+                <span class="timestamp">${msgDate}</span>
+              </div>
+              <p class="content">${msg.message}</p>
+            `;
+
+            if (container) {
+              container.insertBefore(newItem, container.firstChild);
+              if (container.children.length > 5) container.lastChild?.remove();
+            }
+
+            if (countEl) {
+              const currentCount = parseInt(countEl.innerText.replace(/[^0-9]/g, ''), 10) || 0;
+              countEl.innerText = `[${currentCount + 1}]`;
+            }
+
+            form.reset();
+            initGuestbookGlassTracking();
+          } else if (result.error) {
+            alert("Hata: " + result.error);
+          }
+        } else {
+          const text = await response.text();
+          alert("İstek işlenemedi: " + text);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Bağlantı sağlanamadı.");
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerText = "GÖNDER"; }
+      }
+    });
+  }
+
+  window.addEventListener('load', () => {
+    initGuestbookGlassTracking();
+  });
+</script>
+
+<style>
+  /* CSS kodları tamamen korundu, bento grid ve bento element stilleri stabil */
+  .guestbook-section {
+    width: 100%;
+    margin-top: clamp(1.5rem, 3vw, 3rem);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; 
+    text-transform: uppercase; 
+    letter-spacing: 0.2em; 
+    font-weight: 700; 
+    color: #444446;
+  }
+
+  .guestbook-header-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .guestbook-header-block .title-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .guestbook-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #444446;
+    font-weight: 700;
+  }
+
+  .liquid-glass-effect {
+    position: relative;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    overflow: hidden;
+    transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .liquid-glass-effect::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(800px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(255, 255, 255, 0.04), transparent 40%);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .guestbook-form {
+    border-radius: 12px;
+    margin-bottom: 0.6rem;
+  }
+
+  .form-grid-inner {
+    display: flex;
+    position: relative;
+    z-index: 4;
+  }
+
+  .form-grid-inner input {
+    background: transparent;
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.03);
+    color: #f5f5f7;
+    padding: 0.6rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    border-radius: 0;
+  }
+
+  .form-grid-inner input[name="name"] {
+    width: 140px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: #a1a1a6;
+  }
+
+  .form-grid-inner input[name="message"] {
+    flex-grow: 1;
+  }
+
+  .form-grid-inner input::placeholder {
+    color: #444446;
+  }
+
+  .form-grid-inner button {
+    background: transparent;
+    color: #a1a1a6;
+    border: none;
+    padding: 0 1.2rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .form-grid-inner button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.03);
+    color: #f5f5f7;
+  }
+
+  .form-grid-inner button:disabled {
+    color: #444446;
+    cursor: not-allowed;
+  }
+
+  .messages-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .message-card:hover {
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .username {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: #86868b;
+    font-weight: 500;
+  }
+
+  .timestamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: #444446;
+  }
+
+.message-card {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    /* Fontun kaymasını engellemek için font-family'i buraya zorla ekle */
+    font-family: 'Inter', -apple-system, sans-serif !important; 
+  }
+
+  .content {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #86868b;
+    margin: 0;
+    word-break: break-word;
+    /* Fontun miras alınmasını garanti et */
+    font-family: inherit;
+  }
+
+  .pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+    margin-top: 0.5rem;
+  }
+
+  .nav-arrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #86868b;
+    text-decoration: none;
+    padding: 0.6rem 1rem;
+    font-weight: 700;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  a.nav-arrow:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #f5f5f7;
+  }
+
+  .nav-arrow.disabled {
+    color: #444446;
+    cursor: not-allowed;
+  }
+
+  .state-indicator {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #444446;
+    font-weight: 700;
+  }
+
+  @media (max-width: 600px) {
+    .form-grid-inner {
+      flex-direction: column;
+    }
+    .form-grid-inner input[name="name"] {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .form-grid-inner input[name="message"] {
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .form-grid-inner button {
+      padding: 0.65rem;
+      width: 100%;
+    }
+    .message-card {
+      padding: 0.8rem;
+    }
+  }
+</style>

@@ -1,0 +1,475 @@
+---
+export const prerender = false;
+
+import { createClient } from '@supabase/supabase-js';
+
+// Ortam değişkenlerini güvenli tarama mimarisi
+const supabaseUrl = 
+  (typeof process !== 'undefined' && process.env ? process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL : '') || 
+  (typeof import.meta.env !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL : '') || 
+  'https://brfcnnlvrywtplfacwcv.supabase.co'; 
+
+const supabaseKey = 
+  (typeof process !== 'undefined' && process.env ? process.env.PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY : '') || 
+  (typeof import.meta.env !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY : '') || 
+  'sb_publishable_fAWMggTPsfco2IhadpQFJQ_rdm5LsA9';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Sayfalama Ayarları (Maksimum 6 resim)
+const url = new URL(Astro.request.url);
+const currentGPage = parseInt(url.searchParams.get('gpage') || '1', 10);
+const itemsPerPage = 6;
+
+let totalPhotos = 0;
+let photos = [];
+
+try {
+  // Toplam resim sayısını alıyoruz
+  const { count } = await supabase
+    .from('gallery')
+    .select('*', { count: 'exact', head: true });
+  totalPhotos = count || 0;
+
+  // SQL Aralığını Hesapla
+  const from = (currentGPage - 1) * itemsPerPage;
+  const to = from + itemsPerPage - 1;
+
+  // Sadece o sayfaya ait 6 resmi çekiyoruz
+  const { data, error } = await supabase
+    .from('gallery')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .range(from, to);
+  
+  if (error) throw error;
+  photos = data || [];
+} catch (err) {
+  console.error('Galeri fotoğrafları yüklenirken hata oluştu:', err);
+}
+
+const totalGPages = Math.ceil(totalPhotos / itemsPerPage);
+---
+
+<section class="gallery-section word delay-8" id="gallery">
+  <div class="gallery-header-block">
+    <div class="title-area">
+      <h2 class="section-title">RESİMLER</h2>
+      <span class="gallery-counter">[Toplam Resim: {totalPhotos}]</span>
+    </div>
+  </div>
+
+  <div class="gallery-bento-grid">
+    {photos.map((photo) => (
+      <div 
+        class="gallery-item-card liquid-glass-effect gallery-trigger" 
+        data-src={photo.image_url}
+        data-title={photo.title || ''}
+        data-desc={photo.description || ''}
+        data-date={new Date(photo.created_at).toLocaleDateString('tr-TR', {year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit'})}
+      >
+        <div class="image-wrapper">
+          <img 
+            src={photo.image_url} 
+            alt={photo.title || 'Gallery Image'} 
+            loading="lazy" 
+          />
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {totalGPages > 1 && (
+    <div class="pagination-wrapper liquid-glass-effect">
+      {currentGPage > 1 ? (
+        <a href={`?gpage=${currentGPage - 1}#gallery`} class="nav-arrow">&lt; DAHA YENİLER</a>
+      ) : (
+        <span class="nav-arrow disabled">&lt; DAHA YENİLER</span>
+      )}
+      
+      <span class="state-indicator">{currentGPage} / {totalGPages}</span>
+
+      {currentGPage < totalGPages ? (
+        <a href={`?gpage=${currentGPage + 1}#gallery`} class="nav-arrow">DAHA ESKİLER &gt;</a>
+      ) : (
+        <span class="nav-arrow disabled">DAHA ESKİLER &gt;</span>
+      )}
+    </div>
+  )}
+</section>
+
+<div id="gallery-modal" class="gallery-modal-overlay">
+  <div class="modal-card liquid-glass-effect">
+    <button id="modal-close" class="modal-close-btn">&times;</button>
+    <div class="modal-image-container">
+      <img id="modal-img" src="" alt="Zoomed View" />
+    </div>
+    <div class="modal-meta-area">
+      <div class="meta-top">
+        <h3 id="modal-title" class="modal-item-title"></h3>
+        <span id="modal-date" class="modal-item-date"></span>
+      </div>
+      <p id="modal-desc" class="modal-item-desc"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initGalleryGlassTracking() {
+    if (window.innerWidth <= 768) return;
+    const cards = document.querySelectorAll('.gallery-section .liquid-glass-effect, .gallery-modal-overlay .liquid-glass-effect');
+    cards.forEach(card => {
+      (card as HTMLElement).removeAttribute('style');
+      card.addEventListener('mousemove', (e: any) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        (card as HTMLElement).style.setProperty('--mouse-x', `${x}px`);
+        (card as HTMLElement).style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+  }
+
+  function initGalleryLightbox() {
+    const triggers = document.querySelectorAll('.gallery-trigger');
+    const modal = document.getElementById('gallery-modal');
+    const modalImg = document.getElementById('modal-img') as HTMLImageElement;
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const modalDate = document.getElementById('modal-date');
+    const closeBtn = document.getElementById('modal-close');
+
+    if (!modal || !modalImg) return;
+
+    triggers.forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const t = trigger as HTMLElement;
+        const src = t.getAttribute('data-src') || '';
+        const title = t.getAttribute('data-title') || '';
+        const desc = t.getAttribute('data-desc') || '';
+        const date = t.getAttribute('data-date') || '';
+
+        modalImg.src = src;
+        if (modalTitle) modalTitle.innerText = title ? `@${title.toLowerCase()}` : '// no title';
+        if (modalDesc) modalDesc.innerText = desc || 'Açıklama belirtilmedi.';
+        if (modalDate) modalDate.innerText = date;
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; 
+        initGalleryGlassTracking(); 
+      });
+    });
+
+    const closeModal = () => {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => { modalImg.src = ''; }, 300); 
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    });
+  }
+
+  window.addEventListener('load', () => {
+    initGalleryGlassTracking();
+    initGalleryLightbox();
+  });
+</script>
+
+<style>
+  .gallery-section {
+    width: 100%;
+    margin-top: clamp(1.5rem, 3vw, 3rem);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; 
+    text-transform: uppercase; 
+    letter-spacing: 0.2em; 
+    font-weight: 700; 
+    color: #444446;
+  }
+
+  .gallery-header-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .gallery-header-block .title-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .gallery-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #444446;
+    font-weight: 700;
+  }
+
+  .gallery-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .liquid-glass-effect {
+    position: relative;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    overflow: hidden;
+    transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .liquid-glass-effect::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(800px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(255, 255, 255, 0.04), transparent 40%);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .gallery-item-card {
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .gallery-item-card:hover {
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+  }
+
+  .image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1;
+    position: relative;
+  }
+
+  .gallery-item-card:hover .image-wrapper img {
+    transform: scale(1.02);
+  }
+
+  /* --- SAYFALAMA BUTONLARI (GUESTBOOK UYUMLU) --- */
+  .pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+    margin-top: 0.5rem;
+  }
+
+  .nav-arrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #86868b;
+    text-decoration: none;
+    padding: 0.6rem 1rem;
+    font-weight: 700;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  a.nav-arrow:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #f5f5f7;
+  }
+
+  .nav-arrow.disabled {
+    color: #444446;
+    cursor: not-allowed;
+  }
+
+  .state-indicator {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #444446;
+    font-weight: 700;
+  }
+
+  /* --- LIGHTBOX MODAL FIXED & FLEX CENTERING --- */
+  .gallery-modal-overlay {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100vw; 
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 99999;
+    display: flex;
+    align-items: center;     
+    justify-content: center;   
+    opacity: 0;
+    pointer-events: none;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 2rem;
+  }
+
+  .gallery-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 540px; 
+    max-height: 85vh; 
+    border-radius: 16px;
+    background: rgba(10, 10, 10, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95);
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .gallery-modal-overlay.active .modal-card {
+    transform: scale(1);
+  }
+
+  .modal-close-btn {
+    position: absolute;
+    top: 0.75rem; 
+    right: 0.75rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #86868b;
+    font-size: 1.1rem;
+    width: 26px; 
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f5f5f7;
+  }
+
+  .modal-image-container {
+    width: 100%;
+    flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    overflow: hidden;
+  }
+
+  .modal-image-container img {
+    max-width: 100%;
+    max-height: 55vh; 
+    object-fit: contain;
+    display: block;
+  }
+
+  .modal-meta-area {
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    background: rgba(12, 12, 12, 0.4);
+    z-index: 4;
+  }
+
+  .meta-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .modal-item-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #f5f5f7;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .modal-item-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: #444446;
+    white-space: nowrap;
+  }
+
+  .modal-item-desc {
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: #86868b;
+    margin: 0;
+    word-break: break-word;
+  }
+
+  @media (max-width: 900px) {
+    .gallery-bento-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .gallery-modal-overlay {
+      padding: 1rem;
+    }
+    .gallery-bento-grid {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+    .image-wrapper {
+      aspect-ratio: 16 / 10;
+    }
+    .modal-card {
+      border-radius: 12px;
+      max-height: 80vh;
+    }
+    .modal-image-container img {
+      max-height: 45vh;
+    }
+    .modal-meta-area {
+      padding: 0.85rem 1rem;
+    }
+    .meta-top {
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+  }
+</style>
