@@ -252,9 +252,10 @@ let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
                     `;
                 });
                 artistGrid.innerHTML = htmlContent;
-                topArtists.forEach((artist, index) => {
-                    fetchSpotifyCover(artist.name || '', null, `artist-img-${index}`, 'artist');
-                });
+for (let index = 0; index < topArtists.length; index++) {
+    const artist = topArtists[index];
+    await executeSpotifyCoverFetch(artist.name || '', null, `artist-img-${index}`, 'artist');
+}
             }
 
             // 3. ALBÜMLER (Dakika Dinleme)
