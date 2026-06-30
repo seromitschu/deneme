@@ -76,14 +76,11 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
     }
 
     async function executeSpotifyCoverFetch(searchQuery, artistName, imgElementId, type) {
-        if (!searchQuery) return;
         try {
-            // Güvenli endpoint üretimi, baştaki ve sondaki boşluklar temizlendi
-            let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery.trim())}&type=${type}`;
-            
-            // "null" ve "undefined" durumlarının string kelime olarak gitmesi kesinlikle engellendi
-            if (artistName && artistName !== 'null' && artistName !== 'undefined' && artistName.trim() !== '') {
-                endpoint += `&artist=${encodeURIComponent(artistName.trim())}`;
+// Eski hali: let endpoint = `?q=${encodeURIComponent(searchQuery)}...`;
+let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
+            if (artistName && artistName !== 'null') {
+                endpoint += `&artist=${encodeURIComponent(artistName)}`;
             }
 
             const res = await fetch(endpoint);
@@ -100,9 +97,7 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
                     return;
                 }
             }
-        } catch (e) { 
-            console.error("Görsel hatası:", e); 
-        }
+        } catch (e) { console.error("Görsel hatası:", e); }
     }
 
     function updateAmbientGlow(url) {
@@ -120,14 +115,19 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
 
         const parentNode = imgElement.closest('.bento-node');
         if (parentNode) {
-            parentNode.dataset.query = searchQuery || '';
-            parentNode.dataset.artist = artistName || '';
+            parentNode.dataset.query = searchQuery;
+            parentNode.dataset.artist = artistName;
             parentNode.dataset.imgid = imgElementId;
             parentNode.dataset.type = type;
             imageObserver.observe(parentNode);
         } else {
             executeSpotifyCoverFetch(searchQuery, artistName, imgElementId, type);
         }
+    }
+
+    function calculateMinutes(playcount) {
+        const count = parseInt(playcount, 10) || 0;
+        return Math.round(count * 3.5);
     }
 
     function formatPlaycount(playcount) {
@@ -182,9 +182,7 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
                     }
                 }
             }
-        } catch (e) { 
-            console.error("Canlı veri hatası:", e); 
-        }
+        } catch (e) { console.error("Canlı veri hatası:", e); }
     }
 
     async function fetchTopStats(period) {
@@ -193,7 +191,7 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
             const defaultTrackImg = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=60";
             const defaultArtistImg = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&auto=format&fit=crop&q=60";
 
-            // 1. ŞARKILAR
+            // 1. ŞARKILAR (Kez Dinlendi)
             const topTracksRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
             const grid = document.getElementById('top-tracks-grid');
             if (topTracksRes.ok && grid) {
@@ -222,15 +220,12 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
                     `;
                 });
                 grid.innerHTML = htmlContent;
-
-                // Vercel Serverless için sıralı (for) kontrollü akış
-                for (let index = 0; index < topTracks.length; index++) {
-                    const item = topTracks[index];
-                    await fetchSpotifyCover(item.name || '', item.artist?.name || '', `track-img-${index}`, 'track');
-                }
+                topTracks.forEach((item, index) => {
+                    fetchSpotifyCover(item.name || '', item.artist?.name || '', `track-img-${index}`, 'track');
+                });
             }
 
-            // 2. SANATÇILAR
+            // 2. SANATÇILAR (Dakika Dinleme)
             const topArtistsRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
             const artistGrid = document.getElementById('top-artists-grid');
             if (topArtistsRes.ok && artistGrid) {
@@ -240,7 +235,7 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
                 let htmlContent = '';
                 topArtists.forEach((artist, index) => {
                     const artistName = artist.name || '';
-                    const playcountText = formatPlaycount(artist.playcount);
+                    const minutes = calculateMinutes(artist.playcount);
                     const imgId = `artist-img-${index}`;
 
                     htmlContent += `
@@ -250,22 +245,19 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
                             <div class="bento-overlay">
                                 <div class="bento-meta">
                                     <span class="bento-title">${artistName}</span>
-                                    <span class="bento-sub">${playcountText} dinlendi</span>
+                                    <span class="bento-sub">${minutes} dk dinleme</span>
                                 </div>
                             </div>
                         </a>
                     `;
                 });
                 artistGrid.innerHTML = htmlContent;
-
-                // Vercel Serverless için sıralı (for) kontrollü akış
-                for (let index = 0; index < topArtists.length; index++) {
-                    const artist = topArtists[index];
-                    await executeSpotifyCoverFetch(artist.name || '', null, `artist-img-${index}`, 'artist');
-                }
+                topArtists.forEach((artist, index) => {
+                    fetchSpotifyCover(artist.name || '', null, `artist-img-${index}`, 'artist');
+                });
             }
 
-            // 3. ALBÜMLER
+            // 3. ALBÜMLER (Dakika Dinleme)
             const topAlbumsRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
             const albumStrip = document.getElementById('top-albums-grid');
             if (topAlbumsRes.ok && albumStrip) {
@@ -276,7 +268,7 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
                 topAlbums.forEach((album, index) => {
                     const artistName = album.artist?.name || '';
                     const albumName = album.name || '';
-                    const playcountText = formatPlaycount(album.playcount);
+                    const minutes = calculateMinutes(album.playcount);
                     const imgId = `album-img-${index}`;
 
                     htmlContent += `
@@ -287,25 +279,20 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
                                 <div class="bento-meta">
                                     <span class="bento-title">${albumName}</span>
                                     <span class="bento-artist">${artistName}</span>
-                                    <span class="bento-sub">${playcountText} dinlendi</span>
+                                    <span class="bento-sub">${minutes} dk dinleme</span>
                                 </div>
                             </div>
                         </a>
                     `;
                 });
                 albumStrip.innerHTML = htmlContent;
-
-                // Vercel Serverless için sıralı (for) kontrollü akış
-                for (let index = 0; index < topAlbums.length; index++) {
-                    const album = topAlbums[index];
-                    await fetchSpotifyCover(album.name || '', album.artist?.name || '', `album-img-${index}`, 'album');
-                }
+                topAlbums.forEach((album, index) => {
+                    fetchSpotifyCover(album.name || '', album.artist?.name || '', `album-img-${index}`, 'album');
+                });
             }
 
             initLiquidGlassTracking();
-        } catch (error) { 
-            console.error("İstatistik hatası:", error); 
-        }
+        } catch (error) { console.error("İstatistik hatası:", error); }
     }
 
     function setupPeriodControls() {
@@ -326,10 +313,12 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
         setupPeriodControls();
         setInterval(fetchLiveTrack, 15000);
     });
+
+    
 </script>
 
 <style is:global>
-    /* Orijinal index.astro dosyasındaki tüm CSS kuralları stabilite için eksiksiz korundu */
+    /* Orijinal index.astro dosyasındaki CSS seçicileri ve mimarisi */
     .section-title { 
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.68rem; 
@@ -408,6 +397,7 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
     .bento-node:hover { border-color: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
     .bento-node:hover .bento-img { filter: brightness(0.85); transform: scale(1.03); }
 
+    /* Sıvı Cam Hover Işık Efekti Ataması */
     .liquid-glass-effect::before, .bento-node::before {
         content: '';
         position: absolute;
