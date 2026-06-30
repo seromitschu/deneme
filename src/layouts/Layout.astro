@@ -1,0 +1,90 @@
+---
+// src/layouts/Layout.astro
+const name = import.meta.env.PUBLIC_NAME;
+---
+<!doctype html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+        <title>{name}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <div id="ambient-glow" class="ambient-glow"></div>
+        <div id="app-content">
+            <main class="minimal-container">
+                <slot />
+            </main>
+        </div>
+    </body>
+</html>
+<style is:global>
+    ::selection { background-color: white; color: black; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+        background-color: #030303; 
+        color: #f5f5f7;
+        font-family: 'Inter', -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        height: 100%;
+        scrollbar-width: none;
+        position: relative;
+    }
+    html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+    .ambient-glow {
+        position: fixed;
+        top: 35%;
+        right: -10%;
+        width: 600px;
+        height: 600px;
+        background-size: cover;
+        background-position: center;
+        filter: blur(140px);
+        opacity: 0;
+        z-index: 0;
+        pointer-events: none;
+        transition: background-image 1.2s ease, opacity 1.2s ease;
+        border-radius: 50%;
+    }
+
+    #app-content { min-height: 100%; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+
+    .minimal-container {
+        max-width: 840px;
+        width: 100%;
+        margin: 0 auto;
+        padding: clamp(4rem, 10vw, 7rem) clamp(1.2rem, 5vw, 1.5rem);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(3.5rem, 8vw, 6rem);
+    }
+
+    /* Sıvı Cam Hover Işık Takibi */
+    .liquid-glass-effect::before, .bento-node::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(800px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(255, 255, 255, 0.04), transparent 40%);
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    .liquid-glass-effect {
+        position: relative;
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        overflow: hidden;
+        transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @media (max-width: 600px) {
+        .ambient-glow { display: none !important; }
+    }
+</style>

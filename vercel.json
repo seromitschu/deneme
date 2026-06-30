@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "images.seromitschu.xyz"
+        }
+      ],
+      "destination": "/images/$1"
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "blog.seromitschu.xyz"
+        }
+      ],
+      "destination": "/blog/$1"
+    }
+  ]
+}

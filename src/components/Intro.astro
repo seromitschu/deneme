@@ -1,0 +1,72 @@
+---
+// src/components/Intro.astro
+const { name } = Astro.props;
+---
+
+<section class="intro-section">
+    <h1 class="welcome-text">
+        <span class="word delay-1">Merhaba<span class="wave-emoji">👋</span></span> <br />
+        <span class="word delay-2">Ben <span class="name">{name}</span>.</span> <br />
+        <span class="word delay-3 muted-text">Dijital deneyimler</span> <br />
+        <span class="word delay-4 muted-text">tasarlayan ve geliştiren</span> <br />
+        <span class="word delay-5 muted-text">bir arayüz geliştirici.</span>
+    </h1>
+</section>
+
+<style>
+    .intro-section {
+        width: 100%;
+    }
+    
+    .welcome-text { 
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        font-size: clamp(2rem, 5.5vw, 3.4rem); 
+        letter-spacing: -0.04em; 
+        line-height: 1.15; 
+        color: #f5f5f7;
+    }
+    
+    .muted-text { color: #474747; } 
+    .name { color: rgb(252, 41, 41); }
+
+    /* CSS Tabanlı Garanti Açılış Animasyonu */
+    .word {
+        display: inline-block;
+        opacity: 0;
+        filter: blur(10px);
+        transform: translateY(8px);
+        animation: revealText 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes revealText {
+        to {
+            opacity: 1;
+            filter: blur(0px);
+            transform: translateY(0);
+        }
+    }
+
+    .delay-1 { animation-delay: 0.04s; }
+    .delay-2 { animation-delay: 0.10s; }
+    .delay-3 { animation-delay: 0.16s; }
+    .delay-4 { animation-delay: 0.22s; }
+    .delay-5 { animation-delay: 0.28s; }
+
+    .wave-emoji {
+        display: inline-block;
+        margin-left: 0.4rem;
+        transform-origin: 75% 75%;
+        opacity: 0;
+        filter: blur(4px);
+        animation: revealText 0.5s ease 0.12s forwards, wave-animation 1.2s ease-in-out infinite alternate 0.6s;
+    }
+
+    @keyframes wave-animation { 
+        0%, 100%, 60% { transform: rotate(0deg); } 
+        10%, 30% { transform: rotate(12deg); } 
+        20% { transform: rotate(-5deg); } 
+        40% { transform: rotate(-2deg); } 
+        50% { transform: rotate(8deg); } 
+    }
+</style>

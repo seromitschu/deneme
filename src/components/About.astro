@@ -1,0 +1,55 @@
+---
+// src/components/About.astro
+---
+
+<section class="about-section word delay-6">
+    <h2 class="section-title">Hakkımda</h2>
+    <div class="about-content">
+        <p>
+            Tasarım ve kodun kesiştiği noktada, insanı yormayan temiz arayüzler üretmeye odaklanıyorum. Gereksiz tüm süslemelerden arındırılmış, işlevsel ve performanslı web deneyimleri geliştirmek en büyük motivasyonum.
+        </p>
+    </div>
+</section>
+
+<style>
+    .about-section {
+        width: 100%;
+    }
+
+    .section-title { 
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem; 
+        text-transform: uppercase; 
+        letter-spacing: 0.2em; 
+        font-weight: 700; 
+        color: #444446;
+        margin-bottom: 1.2rem;
+    }
+
+    .about-content p { 
+        font-size: 1rem; 
+        line-height: 1.7; 
+        color: #86868b; 
+        font-weight: 400; 
+        max-width: 640px; 
+    }
+
+    /* index.astro'daki akış gecikmesini korumak için */
+    .word {
+        display: inline-block;
+        opacity: 0;
+        filter: blur(10px);
+        transform: translateY(8px);
+        animation: revealText 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes revealText {
+        to {
+            opacity: 1;
+            filter: blur(0px);
+            transform: translateY(0);
+        }
+    }
+
+    .delay-6 { animation-delay: 0.38s; }
+</style>

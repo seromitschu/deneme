@@ -1,0 +1,62 @@
+---
+// src/components/Experience.astro
+---
+<section class="experience-section word delay-7">
+    <div class="experience-grid">
+        <div class="exp-card liquid-glass-effect">
+            <h3 class="exp-card-title">Deneyim</h3>
+            <div class="exp-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-info">
+                        <span class="timeline-date">2025 — Günümüz</span>
+                        <span class="timeline-role">Founder</span>
+                        <span class="timeline-company">Ai-Toyon Game Studio</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-info">
+                        <span class="timeline-date">2023 — Günümüz</span>
+                        <span class="timeline-role">Full Stack Developer</span>
+                        <span class="timeline-company">mitschu.co</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exp-card liquid-glass-effect">
+            <h3 class="exp-card-title">Eğitim</h3>
+            <div class="exp-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-logo">
+                        <img src="/logos/ssbl.jpg" alt="Samsun SBL Logo" onerror="this.style.display='none'" />
+                    </div>
+                    <div class="timeline-info">
+                        <span class="timeline-date">2020 — 2025</span>
+                        <span class="timeline-role">İbrahim Tanrıverdi Sosyal Bilimler Lisesi</span>
+                        <span class="timeline-company">Mezuniyet</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .experience-section { display: flex; flex-direction: column; }
+    .experience-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; width: 100%; }
+    .exp-card { padding: 1.5rem; border-radius: 16px; display: flex; flex-direction: column; gap: 1.5rem; }
+    .exp-card-title { font-size: 1rem; font-weight: 600; color: #a1a1a6; letter-spacing: -0.02em; }
+    .exp-timeline { display: flex; flex-direction: column; gap: 1.5rem; }
+    .timeline-item { display: flex; flex-direction: row; align-items: center; gap: 1rem; width: 100%; }
+    .timeline-logo { width: 42px; height: 42px; flex-shrink: 0; border-radius: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .timeline-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .timeline-info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+    .timeline-date { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: #444446; font-weight: 700; }
+    .timeline-role { font-size: 0.95rem; font-weight: 600; color: #f5f5f7; letter-spacing: -0.01em; }
+    .timeline-company { font-size: 0.85rem; color: #86868b; }
+
+    @media (max-width: 600px) {
+        .experience-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+        .exp-card { padding: 1.2rem; border-radius: 14px; }
+    }
+</style>
