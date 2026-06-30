@@ -77,7 +77,8 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
 
     async function executeSpotifyCoverFetch(searchQuery, artistName, imgElementId, type) {
         try {
-            let endpoint = `?q=${encodeURIComponent(searchQuery)}&type=${type}`;
+// Eski hali: let endpoint = `?q=${encodeURIComponent(searchQuery)}...`;
+let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
             if (artistName && artistName !== 'null') {
                 endpoint += `&artist=${encodeURIComponent(artistName)}`;
             }
