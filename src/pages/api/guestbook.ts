@@ -1,40 +1,50 @@
-import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 
 export const prerender = false;
 
-const supabaseUrl = 
-  (typeof process !== 'undefined' && process.env ? process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL : '') || 
-  'https://brfcnnlvrywtplfacwcv.supabase.co'; 
-
-const supabaseKey = 
-  (typeof process !== 'undefined' && process.env ? process.env.PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY : '') || 
-  'sb_publishable_fAWMggTPsfco2IhadpQFJQ_rdm5LsA9';
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-export const POST: APIRoute = async ({ request }) => {
+export async function POST({ request }) {
   try {
-    const data = await request.formData();
-    const name = data.get('name')?.toString().trim();
-    const message = data.get('message')?.toString().trim();
+    const formData = await request.formData();
+    const name = formData.get('name')?.toString() || 'anonim';
+    const message = formData.get('message')?.toString() || '';
 
-    if (!name || !message) {
-      return new Response(JSON.stringify({ error: "Ad veya mesaj alanı boş bırakılamaz." }), { status: 400 });
+    if (!message.trim()) {
+      return new Response(JSON.stringify({ success: false, error: "Mesaj boş olamaz." }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    const { data: insertedData, error } = await supabase
+    // Env hiyerarşik taraması (API tarafında da garantiye alıyoruz)
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_KEY;
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Veritabanına ekle
+    const { data, error } = await supabase
       .from('guestbook')
       .insert([{ name, message }])
-      .select();
+      .select()
+      .single();
 
-    if (error) throw error;
+    if (error) {
+      return new Response(JSON.stringify({ success: false, error: error.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
-    return new Response(JSON.stringify({ success: true, data: insertedData[0] }), {
+    // TEK BİR BAŞARILI CEVAP DÖNÜLÜYOR (ResponseSentError'u engeller)
+    return new Response(JSON.stringify({ success: true, data }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
-  } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+
+  } catch (err) {
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
-};
+}

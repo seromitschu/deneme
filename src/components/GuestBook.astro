@@ -3,14 +3,15 @@ export const prerender = false;
 
 import { createClient } from '@supabase/supabase-js';
 
+// KESİN ÇÖZÜM: Env hiyerarşik taraması (Hem Key hem URL için)
 const supabaseUrl = 
-  (typeof import.meta.env !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_URL : '') || 
-  (typeof process !== 'undefined' && process.env ? process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL : '') || 
-  'https://brfcnnlvrywtplfacwcv.supabase.co'; 
+  (typeof import.meta.env !== 'undefined' && import.meta.env.PUBLIC_SUPABASE_URL) || 
+  (typeof process !== 'undefined' && process.env && process.env.PUBLIC_SUPABASE_URL) || 
+  'https://brfcnnlvrywtplfacwcv.supabase.co';
 
 const supabaseKey = 
-  (typeof import.meta.env !== 'undefined' ? import.meta.env.PUBLIC_SUPABASE_ANON_KEY : '') || 
-  (typeof process !== 'undefined' && process.env ? process.env.PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY : '') || 
+  (typeof import.meta.env !== 'undefined' && (import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.PUBLIC_SUPABASE_KEY)) || 
+  (typeof process !== 'undefined' && process.env && (process.env.PUBLIC_SUPABASE_ANON_KEY || process.env.PUBLIC_SUPABASE_KEY)) || 
   'sb_publishable_fAWMggTPsfco2IhadpQFJQ_rdm5LsA9';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -137,7 +138,6 @@ const totalPages = Math.ceil(totalMessages / itemsPerPage);
       const formData = new FormData(form);
 
       try {
-        // ARTIK DOĞRUDAN OLUŞTURDUĞUMUZ BAĞIMSIZ API ENDPOINT'İNE GİDİYORUZ
         const response = await fetch('/api/guestbook', {
           method: 'POST',
           body: formData,
@@ -152,24 +152,41 @@ const totalPages = Math.ceil(totalMessages / itemsPerPage);
               minute:'2-digit'
             });
 
-            const newItem = document.createElement('div');
-            newItem.className = 'message-card liquid-glass-effect';
-            newItem.innerHTML = `
-              <div class="card-top">
-                <span class="username">@${msg.name.toLowerCase()}</span>
-                <span class="timestamp">${msgDate}</span>
-              </div>
-              <p class="content">${msg.message}</p>
-            `;
-
             if (container) {
+              // 1. ADIM: Mevcut kartlardan birini şablon (blueprint) olarak kopyala
+              const existingCard = container.querySelector('.message-card');
+              let newItem;
+
+              if (existingCard) {
+                newItem = existingCard.cloneNode(true) as HTMLElement;
+                const usernameEl = newItem.querySelector('.username');
+                const timestampEl = newItem.querySelector('.timestamp');
+                const contentEl = newItem.querySelector('.content');
+                
+                if (usernameEl) usernameEl.textContent = `@${msg.name.toLowerCase()}`;
+                if (timestampEl) timestampEl.textContent = msgDate;
+                if (contentEl) contentEl.textContent = msg.message;
+              } else {
+                // Eğer listede hiç mesaj yoksa sıfırdan güvenli oluştur
+                newItem = document.createElement('div');
+                newItem.className = 'message-card liquid-glass-effect';
+                newItem.innerHTML = `
+                  <div class="card-top">
+                    <span class="username">@${msg.name.toLowerCase()}</span>
+                    <span class="timestamp">${msgDate}</span>
+                  </div>
+                  <p class="content">${msg.message}</p>
+                `;
+              }
+
+              // Kartı en tepeye yerleştir
               container.insertBefore(newItem, container.firstChild);
               if (container.children.length > 5) container.lastChild?.remove();
             }
 
             if (countEl) {
               const currentCount = parseInt(countEl.innerText.replace(/[^0-9]/g, ''), 10) || 0;
-              countEl.innerText = `[${currentCount + 1}]`;
+              countEl.innerText = `[Toplam Mesaj: ${currentCount + 1}]`;
             }
 
             form.reset();
@@ -196,7 +213,6 @@ const totalPages = Math.ceil(totalMessages / itemsPerPage);
 </script>
 
 <style>
-  /* CSS kodları tamamen korundu, bento grid ve bento element stilleri stabil */
   .guestbook-section {
     width: 100%;
     margin-top: clamp(1.5rem, 3vw, 3rem);
@@ -320,6 +336,16 @@ const totalPages = Math.ceil(totalMessages / itemsPerPage);
     gap: 0.5rem;
   }
 
+  .message-card {
+    padding: 0.85rem 1rem !important;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+  }
+
   .message-card:hover {
     border-color: rgba(255, 255, 255, 0.08);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
@@ -344,23 +370,12 @@ const totalPages = Math.ceil(totalMessages / itemsPerPage);
     color: #444446;
   }
 
-.message-card {
-    padding: 0.85rem 1rem;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    /* Fontun kaymasını engellemek için font-family'i buraya zorla ekle */
-    font-family: 'Inter', -apple-system, sans-serif !important; 
-  }
-
   .content {
     font-size: 0.88rem;
     line-height: 1.45;
     color: #86868b;
     margin: 0;
     word-break: break-word;
-    /* Fontun miras alınmasını garanti et */
     font-family: inherit;
   }
 
@@ -417,7 +432,7 @@ const totalPages = Math.ceil(totalMessages / itemsPerPage);
       width: 100%;
     }
     .message-card {
-      padding: 0.8rem;
+      padding: 0.8rem !important;
     }
   }
 </style>
