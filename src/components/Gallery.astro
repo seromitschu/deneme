@@ -4,8 +4,8 @@ export const prerender = false;
 import { createClient } from '@supabase/supabase-js';
 
 // Ortam değişkenlerini güvenli tarama mimarisi
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseKey = import.meta.env.PUBLIC_SUPABASE_KEY;
+const supabaseUrl = 'https://brfcnnlvrywtplfacwcv.supabase.co';
+const supabaseKey = 'sb_publishable_fAWMggTPsfco2IhadpQFJQ_rdm5LsA9';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 

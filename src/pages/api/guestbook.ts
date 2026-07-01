@@ -16,8 +16,8 @@ export async function POST({ request }) {
     }
 
     // Env hiyerarşik taraması (API tarafında da garantiye alıyoruz)
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseKey = import.meta.env.PUBLIC_SUPABASE_KEY;
+const supabaseUrl = 'https://brfcnnlvrywtplfacwcv.supabase.co';
+const supabaseKey = 'sb_publishable_fAWMggTPsfco2IhadpQFJQ_rdm5LsA9';
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 

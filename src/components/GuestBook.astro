@@ -4,15 +4,8 @@ export const prerender = false;
 import { createClient } from '@supabase/supabase-js';
 
 // KESİN ÇÖZÜM: Env hiyerarşik taraması (Hem Key hem URL için)
-const supabaseUrl = 
-  (typeof import.meta.env !== 'undefined' && import.meta.env.PUBLIC_SUPABASE_URL) || 
-  (typeof process !== 'undefined' && process.env && process.env.PUBLIC_SUPABASE_URL) || 
-  'https://brfcnnlvrywtplfacwcv.supabase.co';
-
-const supabaseKey = 
-  (typeof import.meta.env !== 'undefined' && (import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.PUBLIC_SUPABASE_KEY)) || 
-  (typeof process !== 'undefined' && process.env && (process.env.PUBLIC_SUPABASE_ANON_KEY || process.env.PUBLIC_SUPABASE_KEY)) || 
-  'sb_publishable_fAWMggTPsfco2IhadpQFJQ_rdm5LsA9';
+const supabaseUrl = 'https://brfcnnlvrywtplfacwcv.supabase.co';
+const supabaseKey = 'sb_publishable_fAWMggTPsfco2IhadpQFJQ_rdm5LsA9';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
