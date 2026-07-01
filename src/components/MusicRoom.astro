@@ -42,17 +42,17 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
     </div>
 
     <div class="sub-music-block">
-        <h3 class="section-title">En Çok Dinlediğim Şarkılar</h3>
+        <h3 class="subsection-title">En Çok Dinlediğim Şarkılar</h3>
         <div class="bento-seamless-grid" id="top-tracks-grid"></div>
     </div>
 
     <div class="sub-music-block">
-        <h3 class="section-title">En Çok Dinlediğim Sanatçılar</h3>
+        <h3 class="subsection-title">En Çok Dinlediğim Sanatçılar</h3>
         <div class="bento-seamless-grid" id="top-artists-grid"></div>
     </div>
 
     <div class="sub-music-block">
-        <h3 class="section-title">En Çok Dinlediğim Albümler</h3>
+        <h3 class="subsection-title">En Çok Dinlediğim Albümler</h3>
         <div class="bento-seamless-grid" id="top-albums-grid"></div>
     </div>
 </section>
@@ -320,7 +320,6 @@ let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
 <style is:global>
     /* Orijinal index.astro dosyasındaki CSS seçicileri ve mimarisi */
     .section-title { 
-              margin-bottom: 1.2rem; 
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.68rem; 
         text-transform: uppercase; 
@@ -330,12 +329,13 @@ let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
     }
     
     .subsection-title { 
-        font-family: 'Inter', sans-serif;
-        font-size: 1rem; 
-        font-weight: 600; 
-        color: #a1a1a6; 
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem; 
+        text-transform: uppercase; 
+        letter-spacing: 0.2em; 
+        font-weight: 700; 
+        color: #444446;
         margin-bottom: 1.2rem; 
-        letter-spacing: -0.02em;
     }
 
     .music-section { display: flex; flex-direction: column; gap: 4.5rem; }
