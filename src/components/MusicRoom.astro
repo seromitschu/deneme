@@ -76,9 +76,24 @@ const LASTFM_USERNAME = import.meta.env.PUBLIC_LASTFM_USERNAME;
     }
 
     async function executeSpotifyCoverFetch(searchQuery, artistName, imgElementId, type) {
+        // Benzersiz ve güvenli bir cache anahtarı oluştur (Örn: cover_track_bohemian_rhapsody_queen)
+        const cacheKey = `cover_${type}_${searchQuery}_${artistName || ''}`.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        
+        // 1. Önce LocalStorage cache kontrolü yap
+        const cachedUrl = localStorage.getItem(cacheKey);
+        if (cachedUrl) {
+            const img = document.getElementById(imgElementId);
+            if (img) {
+                img.src = cachedUrl;
+                if (imgElementId === 'live-track-img') {
+                    updateAmbientGlow(cachedUrl);
+                }
+            }
+            return; // Görsel cache'den geldi, Spotify API'ye istek atmayı engelle.
+        }
+
         try {
-// Eski hali: let endpoint = `?q=${encodeURIComponent(searchQuery)}...`;
-let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
+            let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
             if (artistName && artistName !== 'null') {
                 endpoint += `&artist=${encodeURIComponent(artistName)}`;
             }
@@ -94,6 +109,9 @@ let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
                             updateAmbientGlow(data.url);
                         }
                     }
+                    
+                    // 2. Başarılı isteği gelecekte kullanmak üzere cache'e kaydet
+                    localStorage.setItem(cacheKey, data.url);
                     return;
                 }
             }
@@ -191,7 +209,7 @@ let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
             const defaultTrackImg = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=60";
             const defaultArtistImg = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&auto=format&fit=crop&q=60";
 
-            // 1. ŞARKILAR (Kez Dinlendi)
+            // 1. ŞARKILAR
             const topTracksRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
             const grid = document.getElementById('top-tracks-grid');
             if (topTracksRes.ok && grid) {
@@ -225,7 +243,7 @@ let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
                 });
             }
 
-            // 2. SANATÇILAR (Dakika Dinleme)
+            // 2. SANATÇILAR
             const topArtistsRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
             const artistGrid = document.getElementById('top-artists-grid');
             if (topArtistsRes.ok && artistGrid) {
@@ -257,7 +275,7 @@ let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
                 });
             }
 
-            // 3. ALBÜMLER (Dakika Dinleme)
+            // 3. ALBÜMLER
             const topAlbumsRes = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&period=${period}&format=json&limit=5`);
             const albumStrip = document.getElementById('top-albums-grid');
             if (topAlbumsRes.ok && albumStrip) {
@@ -313,12 +331,9 @@ let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
         setupPeriodControls();
         setInterval(fetchLiveTrack, 15000);
     });
-
-    
 </script>
 
 <style is:global>
-    /* Orijinal index.astro dosyasındaki CSS seçicileri ve mimarisi */
     .section-title { 
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.68rem; 
@@ -398,7 +413,6 @@ let endpoint = `/api/cover?q=${encodeURIComponent(searchQuery)}&type=${type}`;
     .bento-node:hover { border-color: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
     .bento-node:hover .bento-img { filter: brightness(0.85); transform: scale(1.03); }
 
-    /* Sıvı Cam Hover Işık Efekti Ataması */
     .liquid-glass-effect::before, .bento-node::before {
         content: '';
         position: absolute;
